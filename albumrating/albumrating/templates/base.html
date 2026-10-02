@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ template_data.title|default:"IYM Reviews" }}</title>
+  <style>
+    :root {
+      --bg: #14181c;
+      --surface: #1f262d;
+      --border: #2c3440;
+      --text: #e6edf3;
+      --muted: #8b98a5;
+      --accent: #00c46a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    .navbar {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .brand span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .dropdown { position: relative; }
+
+    .dropdown > a::after {
+      content: "▾";
+      margin-left: 4px;
+      font-size: 0.75em;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      min-width: 140px;
+      padding: 6px 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 10;
+    }
+
+    .dropdown:hover .dropdown-menu,
+    .dropdown:focus-within .dropdown-menu { display: block; }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 8px 14px;
+    }
+
+    .dropdown-menu a:hover { background: var(--border); }
+
+    .hero {
+      padding: 72px 0 56px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(1.9rem, 5vw, 2.8rem);
+      line-height: 1.15;
+    }
+
+    .hero p {
+      margin: 0 auto;
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .search-form {
+      display: flex;
+      gap: 8px;
+      max-width: 440px;
+      margin: 24px auto 0;
+    }
+
+    .search-form input {
+      flex: 1;
+      min-width: 0;
+      padding: 9px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .search-form input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .search-form button {
+      padding: 9px 16px;
+      background: var(--accent);
+      border: 0;
+      border-radius: 6px;
+      color: var(--bg);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .auth-card {
+      max-width: 420px;
+      margin: 56px auto 0;
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .auth-card h1 {
+      margin: 0 0 20px;
+      font-size: 1.5rem;
+    }
+
+    .form-field { margin-bottom: 18px; }
+
+    .form-field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .form-field input,
+    .form-field textarea {
+      width: 100%;
+      padding: 9px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .form-field textarea { resize: vertical; }
+
+    .form-field input:focus,
+    .form-field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .field-help {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .field-help ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .alert {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .alert-danger {
+      background: rgba(255, 123, 114, 0.12);
+      border-color: rgba(255, 123, 114, 0.45);
+      color: #ffb3ad;
+    }
+
+    .auth-card button {
+      width: 100%;
+      padding: 10px 16px;
+      background: var(--accent);
+      border: 0;
+      border-radius: 6px;
+      color: var(--bg);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .section-title {
+      margin: 0 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .empty {
+      padding: 40px 16px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .album-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .album-card h3 {
+      margin: 10px 0 2px;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    .album-card a { display: block; }
+
+    .album-card a:hover h3 { color: var(--accent); }
+
+    .album-card a:hover .album-cover { border-color: var(--accent); }
+
+    .album-cover {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--border);
+    }
+
+    img.album-cover {
+      display: block;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .album-meta {
+      margin: 0 0 6px;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    .album-description {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .album-detail {
+      display: grid;
+      grid-template-columns: minmax(0, 300px) 1fr;
+      gap: 32px;
+      align-items: start;
+      padding: 48px 0 0;
+    }
+
+    .album-detail h1 {
+      margin: 0 0 4px;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      line-height: 1.2;
+    }
+
+    .album-detail .album-meta {
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+
+    .album-detail .album-description {
+      font-size: 1rem;
+      white-space: pre-line;
+    }
+
+    @media (max-width: 640px) {
+      .album-detail { grid-template-columns: 1fr; }
+    }
+
+    .reviews { margin-top: 48px; }
+
+    .review {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .review-meta {
+      margin: 0 0 4px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .review-comment {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .review-prompt {
+      margin: 20px 0 0;
+      color: var(--muted);
+    }
+
+    .review-prompt a,
+    .review-meta a { color: var(--accent); }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .star-on { color: #f5c518; }
+    .star-off { color: var(--border); }
+
+    .album-rating {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .album-rating-count {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    .review-stars {
+      margin: 0 0 4px;
+      font-size: 1rem;
+      letter-spacing: 2px;
+    }
+
+    .star-picker {
+      margin: 0 0 18px;
+      padding: 0;
+      border: 0;
+    }
+
+    .star-picker legend {
+      margin-bottom: 6px;
+      padding: 0;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .star-picker-options {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .star-picker .star-zero {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      margin-right: 8px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .star-picker .star-zero:hover { border-color: var(--muted); color: var(--text); }
+
+    .star-picker input:checked + .star-zero {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    .star-picker .star {
+      padding: 0 2px;
+      font-size: 1.9rem;
+      line-height: 1;
+      color: var(--border);
+      cursor: pointer;
+      transition: color 0.1s;
+    }
+
+    /* Light the checked star and every star before it. */
+    .star-picker input:checked + .star,
+    .star-picker .star:has(~ input:checked) { color: #f5c518; }
+
+    /* While hovering, preview the hovered star and every star before it. */
+    .star-picker-options:hover .star { color: var(--border); }
+    .star-picker-options .star:hover,
+    .star-picker-options .star:has(~ .star:hover) { color: #f5c518; }
+
+    .star-picker input:focus-visible + label {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .star-picker input:focus-visible + .star-zero { border-radius: 50%; }
+
+    .star-picker-caption {
+      margin-left: 12px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .star-picker-optional {
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    .star-clear {
+      margin-left: 10px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .star-clear:hover { text-decoration: underline; }
+
+    /* Nothing to clear while unrated, unless a keyboard user is focused on it. */
+    .star-picker-options:has(#rating-none:checked:not(:focus-visible)) .star-clear { visibility: hidden; }
+
+    .star-picker-options:has(#rating-none:focus-visible) .star-clear {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .star-picker-caption::after { content: "Not rated"; }
+    .star-picker-options:has(#rating-0:checked) .star-picker-caption::after { content: "0 stars"; }
+    .star-picker-options:has(#rating-1:checked) .star-picker-caption::after { content: "1 star"; }
+    .star-picker-options:has(#rating-2:checked) .star-picker-caption::after { content: "2 stars"; }
+    .star-picker-options:has(#rating-3:checked) .star-picker-caption::after { content: "3 stars"; }
+    .star-picker-options:has(#rating-4:checked) .star-picker-caption::after { content: "4 stars"; }
+    .star-picker-options:has(#rating-5:checked) .star-picker-caption::after { content: "5 stars"; }
+
+    .inline-form { display: inline; }
+
+    .link-button {
+      padding: 0;
+      background: none;
+      border: 0;
+      color: #ff7b72;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .link-button:hover { text-decoration: underline; }
+
+    .review-form { margin-top: 24px; }
+
+    .btn {
+      padding: 9px 16px;
+      background: var(--accent);
+      border: 0;
+      border-radius: 6px;
+      color: var(--bg);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .img-card-200 {
+      width: fit-content;
+      max-height: 200px;
+    }
+
+    .prose {
+      max-width: 640px;
+      margin: 0 auto;
+      color: var(--muted);
+    }
+
+    .prose p { margin: 0 0 16px; }
+
+    footer {
+      margin-top: 64px;
+      padding: 24px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <a class="brand" href="{% url 'home.index' %}">IYM <span>Reviews</span></a>
+      <nav class="nav-links">
+        <div class="dropdown">
+          <a href="{% url 'home.index' %}">Home</a>
+          <div class="dropdown-menu">
+            <a href="{% url 'about.index' %}">About</a>
+          </div>
+        </div>
+        <a href="{% url 'albums.index' %}">Albums</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts.logout' %}">Log out ({{ user.username }})</a>
+        {% else %}
+          <a href="{% url 'accounts.login' %}">Log in</a>
+          <a href="{% url 'accounts.signup' %}">Sign up</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="container">IYM Reviews</div>
+  </footer>
+</body>
+</html>

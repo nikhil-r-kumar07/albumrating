@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="auth-card">
+    <h1>Log in</h1>
+
+    {% if template_data.error %}
+      <div class="alert alert-danger" role="alert">{{ template_data.error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'accounts.login' %}">
+      {% csrf_token %}
+
+      <div class="form-field">
+        <label for="username">Username</label>
+        <input id="username" type="text" name="username" autocomplete="username" required>
+      </div>
+
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password" autocomplete="current-password" required>
+      </div>
+
+      <button type="submit">Log in</button>
+    </form>
+  </section>
+{% endblock %}

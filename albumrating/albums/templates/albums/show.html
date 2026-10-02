@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% with album=template_data.album %}
+    <section class="album-detail">
+      {% if album.image %}
+        <img class="album-cover" src="{{ album.image.url }}" alt="{{ album.name }} cover">
+      {% else %}
+        <div class="album-cover">{{ album.name|slice:":1" }}</div>
+      {% endif %}
+
+      <div>
+        <h1>{{ album.name }}</h1>
+        <p class="album-meta">{{ album.artist }} · {{ album.year }}</p>
+        {% if template_data.average is not None %}
+          <p class="album-rating">
+            <span class="star-on" aria-hidden="true">★</span>
+            {{ template_data.average|floatformat:1 }}
+            {% if template_data.rating_count %}
+              <span class="album-rating-count">· {{ template_data.rating_count }} rating{{ template_data.rating_count|pluralize }}</span>
+            {% endif %}
+          </p>
+        {% endif %}
+        <p class="album-description">{{ album.description }}</p>
+      </div>
+    </section>
+
+    <section class="reviews">
+      <h2 class="section-title">Reviews</h2>
+
+      {% for review in template_data.reviews %}
+        <article class="review">
+          <div class="review-meta">
+            Review by {{ review.user.username }} · {{ review.date|date:"M j, Y" }}
+            {% if user == review.user %}
+              · <a href="{% url 'albums.edit_review' id=album.id review_id=review.id %}">Edit</a>
+              · <form class="inline-form" method="POST" action="{% url 'albums.delete_review' id=album.id review_id=review.id %}" onsubmit="return confirm('Delete this review?');">
+                  {% csrf_token %}
+                  <button class="link-button" type="submit">Delete</button>
+                </form>
+            {% endif %}
+          </div>
+          {% if review.rating is not None %}
+            <div class="review-stars" role="img" aria-label="{{ review.rating }} out of 5 stars">
+              {% for i in "12345" %}<span class="{% if forloop.counter <= review.rating %}star-on{% else %}star-off{% endif %}">★</span>{% endfor %}
+            </div>
+          {% endif %}
+          <p class="review-comment">{{ review.comment }}</p>
+        </article>
+      {% empty %}
+        <div class="empty">No reviews yet.</div>
+      {% endfor %}
+
+      {% if not user.is_authenticated %}
+        <p class="review-prompt"><a href="{% url 'accounts.login' %}">Log in</a> to write a review.</p>
+      {% else %}
+        <form class="review-form" method="POST" action="{% url 'albums.create_review' id=album.id %}">
+          {% csrf_token %}
+          {% include 'albums/star_picker.html' %}
+          <div class="form-field">
+            <label for="comment">Write a review</label>
+            <textarea id="comment" name="comment" rows="3" maxlength="255" required></textarea>
+          </div>
+          <button class="btn" type="submit">Add review</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endwith %}
+{% endblock %}

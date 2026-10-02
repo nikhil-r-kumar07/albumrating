@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="auth-card">
+    <h1>Sign up</h1>
+
+    <form method="POST" action="{% url 'accounts.signup' %}">
+      {% csrf_token %}
+
+      {{ template_data.form.non_field_errors }}
+
+      {% for field in template_data.form %}
+        <div class="form-field">
+          {{ field.errors }}
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}
+            <div class="field-help">{{ field.help_text|safe }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <button type="submit">Create account</button>
+    </form>
+  </section>
+{% endblock %}

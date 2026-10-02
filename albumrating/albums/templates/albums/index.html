@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero">
+    <h1>Albums</h1>
+    <p>Browse everything in the collection.</p>
+    <form class="search-form" method="GET" action="{% url 'albums.index' %}">
+      <input type="search" name="search" value="{{ request.GET.search }}" placeholder="Search albums by name" aria-label="Search albums">
+      <button type="submit">Search</button>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="section-title">{% if request.GET.search %}Results for "{{ request.GET.search }}"{% else %}All albums{% endif %}</h2>
+    {% if template_data.albums %}
+      <div class="album-grid">
+        {% for album in template_data.albums %}
+          <article class="album-card">
+            <a href="{% url 'albums.show' id=album.id %}">
+              {% if album.image %}
+                <img class="album-cover" src="{{ album.image.url }}" alt="{{ album.name }} cover">
+              {% else %}
+                <div class="album-cover">{{ album.name|slice:":1" }}</div>
+              {% endif %}
+              <h3>{{ album.name }}</h3>
+            </a>
+            <p class="album-meta">{{ album.artist }} · {{ album.year }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">{% if request.GET.search %}No albums match that search.{% else %}No albums yet.{% endif %}</div>
+    {% endif %}
+  </section>
+{% endblock %}
