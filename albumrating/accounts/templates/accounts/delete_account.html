@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="auth-card">
+    <h1>Delete account</h1>
+
+    <p class="danger-note">
+      This permanently deletes <strong>{{ user.username }}</strong> and every review you've written.
+      It can't be undone.
+    </p>
+
+    {% if template_data.error %}
+      <div class="alert alert-danger" role="alert">{{ template_data.error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'accounts.delete' %}">
+      {% csrf_token %}
+      <div class="form-field">
+        <label for="password">Enter your password to confirm</label>
+        <input id="password" type="password" name="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn-danger" type="submit">Delete my account</button>
+    </form>
+
+    <p class="review-prompt"><a href="{% url 'home.index' %}">Cancel</a></p>
+  </section>
+{% endblock %}

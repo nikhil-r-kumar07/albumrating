@@ -3,11 +3,25 @@ from .forms import CustomUserCreationForm, CustomErrorList
 from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
+@login_required
+def delete_account(request):
+    template_data = {}
+    template_data['title'] = 'Delete Account'
+    if request.method == 'POST':
+        if request.user.check_password(request.POST.get('password', '')):
+            user = request.user
+            auth_logout(request)
+            user.delete()
+            return redirect('home.index')
+        template_data['error'] = 'That password is incorrect.'
+    return render(request, 'accounts/delete_account.html', {'template_data': template_data})
+
 @login_required
 def logout(request):
     auth_logout(request)
     return redirect('home.index')
-# Create your views here.
 def signup(request):
     template_data = {}
     template_data['title'] = 'Sign Up'
