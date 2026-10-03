@@ -49,6 +49,12 @@
 
       {% if not user.is_authenticated %}
         <p class="review-prompt"><a href="{% url 'accounts.login' %}">Log in</a> to write a review.</p>
+      {% elif template_data.my_review %}
+        <p class="review-prompt">
+          You've reviewed this album.
+          <a href="{% url 'albums.edit_review' id=album.id review_id=template_data.my_review.id %}">Edit your review</a>
+          to change your rating.
+        </p>
       {% else %}
         <form class="review-form" method="POST" action="{% url 'albums.create_review' id=album.id %}">
           {% csrf_token %}

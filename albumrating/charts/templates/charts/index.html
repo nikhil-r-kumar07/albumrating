@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero">
+    <h1>Top rated albums</h1>
+    <p>The highest-rated albums on IYM Reviews. One vote per person per album.</p>
+  </section>
+
+  <section>
+    <h2 class="section-title">Chart</h2>
+    {% if template_data.albums %}
+      <ol class="chart">
+        {% for album in template_data.albums %}
+          <li class="chart-row">
+            <span class="chart-rank">{{ forloop.counter }}</span>
+            <a class="chart-cover" href="{% url 'albums.show' id=album.id %}" tabindex="-1" aria-hidden="true">
+              {% include 'albums/cover.html' %}
+            </a>
+            <div class="chart-info">
+              <a class="chart-title" href="{% url 'albums.show' id=album.id %}">{{ album.name }}</a>
+              <p class="chart-artist">
+                <a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a>{% if album.year %} · {{ album.year }}{% endif %}
+              </p>
+            </div>
+            <div class="chart-score">
+              <span class="chart-average"><span class="star-on" aria-hidden="true">★</span> {{ album.average|floatformat:2 }}<span class="sr-only"> out of 5</span></span>
+              <span class="chart-count">{{ album.ratings }} rating{{ album.ratings|pluralize }}</span>
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <div class="empty">
+        No albums have {{ template_data.min_ratings }} or more ratings yet.
+        <a href="{% url 'albums.index' %}">Find an album</a> and rate it.
+      </div>
+    {% endif %}
+    <p class="results-note">Albums need at least {{ template_data.min_ratings }} rating{{ template_data.min_ratings|pluralize }} to chart. Ties go to the album with more ratings.</p>
+  </section>
+{% endblock %}

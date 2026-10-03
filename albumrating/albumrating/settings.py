@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-h)*1(_yozr3o7lx4i6u7*i&jofenzdegg=)hli4rhhx5v*^)dz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['iymmoviereviews.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'home',
     'albums',
     'accounts',
+    'charts',
 ]
 
 MIDDLEWARE = [

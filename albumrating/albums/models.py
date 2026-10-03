@@ -27,5 +27,7 @@ class Review(models.Model):
     album = models.ForeignKey(Album, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(null = True, blank = True)
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['album', 'user'], name='one_review_per_user_per_album')]
     def __str__(self):
         return str(self.id) + ' - ' + self.album.name

@@ -38,15 +38,17 @@ def show(request, id):
     stats = reviews.aggregate(average = Avg('rating'), count = Count('rating'))
     template_data['average'] = stats['average']
     template_data['rating_count'] = stats['count']
+    if request.user.is_authenticated:
+        template_data['my_review'] = reviews.filter(user=request.user).first()
     return render(request, 'albums/show.html', {'template_data': template_data})
 @login_required
 def create_review(request, id):
     if request.method == 'POST' and request.POST['comment'] != '':
         album = get_object_or_404(Album, id=id)
-        review = Review()
+        review = Review.objects.filter(album=album, user=request.user).first()
+        if review is None:
+            review = Review(album=album, user=request.user)
         review.comment = request.POST['comment']
-        review.album = album
-        review.user = request.user
         rating = request.POST.get('rating', '')
         if rating in ['0', '1', '2', '3', '4', '5']:
             review.rating = int(rating)

@@ -319,6 +319,80 @@
 
     .diary-unrated { margin-bottom: 4px; }
 
+    .chart {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 2.5rem 64px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chart-rank {
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-align: right;
+      color: var(--muted);
+    }
+
+    .chart-row:nth-child(-n+3) .chart-rank { color: var(--accent); }
+
+    .chart-cover { display: block; }
+
+    .chart-cover .album-cover {
+      font-size: 1.5rem;
+      border-radius: 4px;
+    }
+
+    .chart-title {
+      display: block;
+      font-weight: 600;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+
+    .chart-title:hover { color: var(--accent); }
+
+    .chart-artist {
+      margin: 2px 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .chart-artist a:hover { color: var(--text); text-decoration: underline; }
+
+    .chart-score {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      white-space: nowrap;
+    }
+
+    .chart-average {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .chart-count {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 520px) {
+      .chart-row {
+        grid-template-columns: 1.75rem 48px minmax(0, 1fr) auto;
+        gap: 10px;
+      }
+      .chart-rank { font-size: 1.05rem; }
+    }
+
     .results-note {
       margin: 24px 0 0;
       font-size: 0.85rem;
@@ -640,6 +714,7 @@
           </div>
         </div>
         <a href="{% url 'albums.index' %}">Albums</a>
+        <a href="{% url 'charts.index' %}">Charts</a>
         {% if user.is_authenticated %}
           <div class="dropdown">
             <a href="{% url 'accounts.logout' %}">{{ user.username }}</a>
