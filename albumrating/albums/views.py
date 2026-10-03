@@ -15,6 +15,7 @@ def index(request):
         template_data['albums'] = Album.objects.all()
     return render(request, 'albums/index.html',
                   {'template_data': template_data})
+@login_required
 def open_album(request, mbid):
     mbid = str(mbid)
     album = Album.objects.filter(mbid=mbid).first()
