@@ -4,10 +4,31 @@
   <section class="hero">
     <h1>Track the albums you've heard.</h1>
     <p>Rate them, review them, and keep a diary of everything you listen to.</p>
+    <form class="search-form" method="GET" action="{% url 'albums.index' %}">
+      <input type="search" name="search" placeholder="Album name, e.g. Abbey Road Beatles" aria-label="Search albums">
+      <button type="submit">Search</button>
+    </form>
   </section>
 
   <section>
-    <h2 class="section-title">Recent albums</h2>
-    <div class="empty">No albums yet.</div>
+    <h2 class="section-title">Recently reviewed</h2>
+    {% if template_data.albums %}
+      <div class="album-grid">
+        {% for album in template_data.albums %}
+          <article class="album-card">
+            <a href="{% url 'albums.show' id=album.id %}">
+              {% include 'albums/cover.html' %}
+              <h3>{{ album.name }}</h3>
+            </a>
+            <p class="album-meta">
+              <a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a>
+              {% if album.average is not None %}· <span class="star-on" aria-hidden="true">★</span> {{ album.average|floatformat:1 }}<span class="sr-only"> out of 5</span>{% endif %}
+            </p>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No reviews yet. <a href="{% url 'albums.index' %}">Find an album</a> and be the first.</div>
+    {% endif %}
   </section>
 {% endblock %}

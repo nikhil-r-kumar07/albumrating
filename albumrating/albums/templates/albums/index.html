@@ -3,29 +3,51 @@
 {% block content %}
   <section class="hero">
     <h1>Albums</h1>
-    <p>Browse everything in the collection.</p>
+    <p>Search any album, then rate and review it.</p>
     <form class="search-form" method="GET" action="{% url 'albums.index' %}">
-      <input type="search" name="search" value="{{ request.GET.search }}" placeholder="Search albums by name" aria-label="Search albums">
+      <input type="search" name="search" value="{{ request.GET.search }}" placeholder="Album name, e.g. Abbey Road Beatles" aria-label="Search albums">
       <button type="submit">Search</button>
     </form>
   </section>
 
   <section>
-    <h2 class="section-title">{% if request.GET.search %}Results for "{{ request.GET.search }}"{% else %}All albums{% endif %}</h2>
-    {% if template_data.albums %}
-      <div class="album-grid">
-        {% for album in template_data.albums %}
-          <article class="album-card">
-            <a href="{% url 'albums.show' id=album.id %}">
-              {% include 'albums/cover.html' %}
-              <h3>{{ album.name }}</h3>
-            </a>
-            <p class="album-meta">{{ album.artist }}{% if album.year %} · {{ album.year }}{% endif %}</p>
-          </article>
-        {% endfor %}
-      </div>
+    {% if request.GET.search %}
+      <h2 class="section-title">Results for "{{ request.GET.search }}"</h2>
+      {% if template_data.results is None %}
+        <div class="empty">MusicBrainz is busy right now. Wait a few seconds and search again.</div>
+      {% elif template_data.results %}
+        <div class="album-grid">
+          {% for album in template_data.results %}
+            <article class="album-card">
+              <a href="{% url 'albums.open' mbid=album.mbid %}">
+                {% include 'albums/cover.html' %}
+                <h3>{{ album.name }}</h3>
+              </a>
+              <p class="album-meta">{{ album.artist_name }}{% if album.year %} · {{ album.year }}{% endif %}</p>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">No albums match that search. Try adding the artist's name.</div>
+      {% endif %}
+      <p class="results-note"><a href="{% url 'albums.index' %}">← Back to albums on IYM Reviews</a></p>
     {% else %}
-      <div class="empty">{% if request.GET.search %}No albums match that search.{% else %}No albums yet.{% endif %}</div>
+      <h2 class="section-title">On IYM Reviews</h2>
+      {% if template_data.albums %}
+        <div class="album-grid">
+          {% for album in template_data.albums %}
+            <article class="album-card">
+              <a href="{% url 'albums.show' id=album.id %}">
+                {% include 'albums/cover.html' %}
+                <h3>{{ album.name }}</h3>
+              </a>
+              <p class="album-meta"><a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a>{% if album.year %} · {{ album.year }}{% endif %}</p>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">No albums yet. Search for one above to get started.</div>
+      {% endif %}
     {% endif %}
   </section>
 {% endblock %}

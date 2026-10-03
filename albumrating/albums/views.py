@@ -1,19 +1,32 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Album, Review
+from django.http import Http404
+from .models import Album, Review, Artist
+from . import musicbrainz
 from django.db.models import Avg, Count
 
 def index(request):
     search_term = request.GET.get('search')
-    if search_term:
-        albums = Album.objects.filter(name__icontains=search_term)
-    else:
-        albums = Album.objects.all()
     template_data = {}
     template_data['title'] = 'Albums'
-    template_data['albums'] = albums
+    if search_term:
+        template_data['results'] = musicbrainz.search_albums(search_term)
+    else:
+        template_data['albums'] = Album.objects.all()
     return render(request, 'albums/index.html',
                   {'template_data': template_data})
+def open_album(request, mbid):
+    mbid = str(mbid)
+    album = Album.objects.filter(mbid=mbid).first()
+    if album is None:
+        data = musicbrainz.get_album(mbid)
+        if data is None:
+            raise Http404
+        artist, created = Artist.objects.get_or_create(
+            mbid=data['artist_mbid'], defaults={'name': data['artist_name']})
+        album = Album.objects.create(name=data['name'], artist=artist, year=data['year'],
+                                     cover_url=data['cover_url'], mbid=mbid)
+    return redirect('albums.show', id=album.id)
 def show(request, id):
     album = get_object_or_404(Album, id=id)
     reviews = Review.objects.filter(album=album)
@@ -66,3 +79,11 @@ def delete_review(request, id, review_id):
     review = get_object_or_404(Review, id=review_id, user=request.user)
     review.delete()
     return redirect('albums.show', id=id)
+def artist(request, id):
+    artist = get_object_or_404(Artist, id=id)
+    albums = Album.objects.filter(artist=artist).annotate(average=Avg('review__rating')).order_by('year')
+    template_data = {}
+    template_data['title'] = artist.name
+    template_data['artist'] = artist
+    template_data['albums'] = albums
+    return render(request, 'albums/artist.html', {'template_data': template_data})

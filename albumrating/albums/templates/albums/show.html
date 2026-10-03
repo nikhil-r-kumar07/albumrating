@@ -7,7 +7,7 @@
 
       <div>
         <h1>{{ album.name }}</h1>
-        <p class="album-meta">{{ album.artist }}{% if album.year %} · {{ album.year }}{% endif %}</p>
+        <p class="album-meta"><a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a>{% if album.year %} · {{ album.year }}{% endif %}</p>
         {% if template_data.average is not None %}
           <p class="album-rating">
             <span class="star-on" aria-hidden="true">★</span>
