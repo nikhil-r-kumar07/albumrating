@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Album, Review, Artist
+from .models import Album, Review, Artist, ArtistReview
 
 class AlbumAdmin(admin.ModelAdmin):
     ordering = ['name']
@@ -7,4 +7,5 @@ class AlbumAdmin(admin.ModelAdmin):
 admin.site.register(Album, AlbumAdmin)
 admin.site.register(Review)
 admin.site.register(Artist)
+admin.site.register(ArtistReview)
 

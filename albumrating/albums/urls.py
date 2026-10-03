@@ -9,4 +9,7 @@ urlpatterns = [
     path('<int:id>/review/<int:review_id>/delete/', views.delete_review, name = 'albums.delete_review'),
     path('mb/<uuid:mbid>/', views.open_album, name = 'albums.open'),
     path('artist/<int:id>/', views.artist, name = 'albums.artist'),
+    path('artist/<int:id>/review/create/', views.create_artist_review, name = 'albums.create_artist_review'),
+    path('artist/<int:id>/review/<int:review_id>/edit/', views.edit_artist_review, name = 'albums.edit_artist_review'),
+    path('artist/<int:id>/review/<int:review_id>/delete/', views.delete_artist_review, name = 'albums.delete_artist_review'),
 ]

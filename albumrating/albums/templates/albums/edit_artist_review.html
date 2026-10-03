@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% with review=template_data.review %}
+    <section class="auth-card">
+      <h1>Edit review</h1>
+
+      <form method="POST" action="{% url 'albums.edit_artist_review' id=review.artist.id review_id=review.id %}">
+        {% csrf_token %}
+        {% include 'albums/star_picker.html' with current=review.rating %}
+        <div class="form-field">
+          <label for="comment">Your review of {{ review.artist.name }}</label>
+          <textarea id="comment" name="comment" rows="4" maxlength="255" required>{{ review.comment }}</textarea>
+        </div>
+        <button type="submit">Save review</button>
+      </form>
+
+      <p class="review-prompt"><a href="{% url 'albums.artist' id=review.artist.id %}">Cancel</a></p>
+    </section>
+  {% endwith %}
+{% endblock %}

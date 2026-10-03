@@ -1,9 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from .models import Album, Review, Artist
+from .models import Album, Review, Artist, ArtistReview
 from . import musicbrainz
 from django.db.models import Avg, Count
+
+def rating_from(request):
+    # The star picker sends '0'-'5', or '' when left unrated.
+    rating = request.POST.get('rating', '')
+    if rating in ['0', '1', '2', '3', '4', '5']:
+        return int(rating)
+    return None
 
 def index(request):
     search_term = request.GET.get('search')
@@ -49,11 +56,7 @@ def create_review(request, id):
         if review is None:
             review = Review(album=album, user=request.user)
         review.comment = request.POST['comment']
-        rating = request.POST.get('rating', '')
-        if rating in ['0', '1', '2', '3', '4', '5']:
-            review.rating = int(rating)
-        else:
-            review.rating = None
+        review.rating = rating_from(request)
         review.save()
     return redirect('albums.show', id=id)
 @login_required
@@ -68,11 +71,7 @@ def edit_review(request, id, review_id):
         return render(request, 'albums/edit_review.html', {'template_data': template_data})
     elif request.method == 'POST' and request.POST['comment'] != '':
         review.comment = request.POST['comment']
-        rating = request.POST.get('rating', '')
-        if rating in ['0', '1', '2', '3', '4', '5']:
-            review.rating = int(rating)
-        else:
-            review.rating = None
+        review.rating = rating_from(request)
         review.save()
         return redirect('albums.show', id=id)
     else:
@@ -89,4 +88,41 @@ def artist(request, id):
     template_data['title'] = artist.name
     template_data['artist'] = artist
     template_data['albums'] = albums
+    reviews = ArtistReview.objects.filter(artist=artist).order_by('-date')
+    template_data['reviews'] = reviews
+    stats = reviews.aggregate(average = Avg('rating'), count = Count('rating'))
+    template_data['average'] = stats['average']
+    template_data['rating_count'] = stats['count']
+    if request.user.is_authenticated:
+        template_data['my_review'] = reviews.filter(user=request.user).first()
     return render(request, 'albums/artist.html', {'template_data': template_data})
+@login_required
+def create_artist_review(request, id):
+    if request.method == 'POST' and request.POST.get('comment', '') != '':
+        artist = get_object_or_404(Artist, id=id)
+        review = ArtistReview.objects.filter(artist=artist, user=request.user).first()
+        if review is None:
+            review = ArtistReview(artist=artist, user=request.user)
+        review.comment = request.POST['comment']
+        review.rating = rating_from(request)
+        review.save()
+    return redirect('albums.artist', id=id)
+@login_required
+def edit_artist_review(request, id, review_id):
+    review = get_object_or_404(ArtistReview, id=review_id, user=request.user)
+    if request.method == 'GET':
+        template_data = {}
+        template_data['title'] = 'Edit Review'
+        template_data['review'] = review
+        return render(request, 'albums/edit_artist_review.html', {'template_data': template_data})
+    elif request.method == 'POST' and request.POST.get('comment', '') != '':
+        review.comment = request.POST['comment']
+        review.rating = rating_from(request)
+        review.save()
+    return redirect('albums.artist', id=id)
+@login_required
+def delete_artist_review(request, id, review_id):
+    if request.method == 'POST':
+        review = get_object_or_404(ArtistReview, id=review_id, user=request.user)
+        review.delete()
+    return redirect('albums.artist', id=id)
