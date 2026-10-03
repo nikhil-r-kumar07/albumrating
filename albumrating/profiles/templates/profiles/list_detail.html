@@ -3,7 +3,7 @@
 {% block content %}
   {% with album_list=template_data.list %}
     <section class="list-header">
-      <p class="artist-label">List by {{ album_list.user.username }}</p>
+      <p class="artist-label">List by <a class="user-link" href="{% url 'profiles.public' username=album_list.user.username %}">{{ album_list.user.username }}</a></p>
       <h1>{{ album_list.title }}</h1>
       {% if album_list.description %}<p class="list-description">{{ album_list.description|linebreaksbr }}</p>{% endif %}
       <p class="artist-sub">{{ template_data.items|length }} album{{ template_data.items|length|pluralize }} · Updated {{ album_list.updated|date:"M j, Y" }}</p>

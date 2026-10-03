@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>Diary</h1>
+    <p>Every listen you've logged, including relistens. Log one from any album page.</p>
+  </section>
+
+  {% if template_data.entries %}
+    {% regroup template_data.entries by listened_on|date:"F Y" as months %}
+    {% for month in months %}
+      <section class="home-section">
+        <h2 class="section-title">{{ month.grouper }}</h2>
+        <ul class="diary-list">
+          {% for entry in month.list %}
+            {% include 'profiles/diary_row.html' %}
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+  {% else %}
+    <div class="empty">No listens yet. Open any album and use "Log a listen".</div>
+  {% endif %}
+{% endblock %}

@@ -30,3 +30,21 @@ def half_star_values():
         value = ('%.1f' % (half / 2)).rstrip('0').rstrip('.')
         values.append((value, value.replace('.', '-'), 'left' if half % 2 else 'right'))
     return values
+
+@register.filter
+def track_length(ms):
+    # 261000 -> "4:21"
+    if not ms:
+        return ''
+    seconds = round(ms / 1000)
+    return '%d:%02d' % (seconds // 60, seconds % 60)
+
+@register.filter
+def total_length(ms):
+    # Album running time: 2843000 -> "47 min", 4500000 -> "1 hr 15 min"
+    if not ms:
+        return ''
+    minutes = round(ms / 60000)
+    if minutes < 60:
+        return '%d min' % minutes
+    return '%d hr %d min' % (minutes // 60, minutes % 60)

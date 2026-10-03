@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load ratings %}
 
 {% block content %}
   {% with album=template_data.album %}
@@ -52,10 +53,70 @@
             {% else %}
               <a class="btn-outline" href="{% url 'profiles.lists' %}">+ Create a list</a>
             {% endif %}
+
+            {% if template_data.is_favorite or not template_data.favorites_full %}
+              <form method="POST" action="{% url 'profiles.favorite_toggle' %}">
+                {% csrf_token %}
+                <input type="hidden" name="album" value="{{ album.id }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                {% if template_data.is_favorite %}
+                  <button class="btn-outline is-following" type="submit" aria-pressed="true">♥ In your top 4<span class="sr-only">, click to remove</span></button>
+                {% else %}
+                  <button class="btn-outline" type="submit" aria-pressed="false">♡ Add to top 4</button>
+                {% endif %}
+              </form>
+            {% else %}
+              <a class="btn-outline" href="{% url 'profiles.public' username=user.username %}" title="Remove one from your profile to add this">Top 4 is full</a>
+            {% endif %}
           </div>
+
+          <details class="listen-box">
+            <summary>
+              Log a listen
+              {% if template_data.listen_count %}
+                <span class="listen-count">· listened {{ template_data.listen_count }} time{{ template_data.listen_count|pluralize }}, last {{ template_data.last_listen.listened_on|date:"M j, Y" }}</span>
+              {% endif %}
+            </summary>
+            <form class="listen-form" method="POST" action="{% url 'profiles.log_listen' %}">
+              {% csrf_token %}
+              <input type="hidden" name="album" value="{{ album.id }}">
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <div class="form-field">
+                <label for="listened_on">Date</label>
+                <input id="listened_on" type="date" name="listened_on" value="{{ template_data.today|date:'Y-m-d' }}" max="{{ template_data.today|date:'Y-m-d' }}" required>
+              </div>
+              <div class="form-field">
+                <label for="listen-note">Note <span class="star-picker-optional">(optional)</span></label>
+                <input id="listen-note" type="text" name="note" maxlength="280" placeholder="e.g. first time on vinyl">
+              </div>
+              <button class="btn" type="submit">Add to diary</button>
+            </form>
+          </details>
         {% endif %}
       </div>
     </section>
+
+    {% if template_data.tracks %}
+      <section class="tracklist-section">
+        <h2 class="section-title">
+          Tracklist
+          <span class="tracklist-total">{{ template_data.tracks|length }} track{{ template_data.tracks|length|pluralize }}{% if template_data.total_ms %} · {{ template_data.total_ms|total_length }}{% endif %}</span>
+        </h2>
+        {% regroup template_data.tracks by disc as discs %}
+        {% for disc in discs %}
+          {% if template_data.discs > 1 %}<h3 class="tracklist-disc">Disc {{ disc.grouper }}</h3>{% endif %}
+          <ol class="tracklist">
+            {% for track in disc.list %}
+              <li>
+                <span class="track-num">{{ track.position }}</span>
+                <span class="track-title">{{ track.title }}</span>
+                <span class="track-length">{{ track.length_ms|track_length }}</span>
+              </li>
+            {% endfor %}
+          </ol>
+        {% endfor %}
+      </section>
+    {% endif %}
 
     <section class="reviews">
       <h2 class="section-title">Reviews</h2>
@@ -63,7 +124,7 @@
       {% for review in template_data.reviews %}
         <article class="review" id="review-{{ review.id }}">
           <div class="review-meta">
-            {% include 'profiles/avatar.html' with person=review.user %} Review by {{ review.user.username }} · {{ review.date|date:"M j, Y" }}
+            {% include 'profiles/avatar.html' with person=review.user %} Review by <a class="user-link" href="{% url 'profiles.public' username=review.user.username %}">{{ review.user.username }}</a> · {{ review.date|date:"M j, Y" }}
             {% if user == review.user %}
               · <a href="{% url 'albums.edit_review' id=album.id review_id=review.id %}">Edit</a>
               · <form class="inline-form" method="POST" action="{% url 'albums.delete_review' id=album.id review_id=review.id %}" onsubmit="return confirm('Delete this review?');">

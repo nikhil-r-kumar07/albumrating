@@ -17,8 +17,19 @@ class Album(models.Model):
     image = models.ImageField(upload_to='album_image/', blank=True)
     cover_url = models.URLField(blank=True, default='')
     mbid = models.CharField(max_length=36, unique=True, null=True, blank=True)
+    tracks_fetched = models.BooleanField(default=False)  # True once the tracklist was loaded from MusicBrainz
     def __str__(self):
         return str(self.id) + ' - ' + self.name
+
+class Track(models.Model):
+    id = models.AutoField(primary_key=True)
+    album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='tracks')
+    disc = models.PositiveSmallIntegerField(default=1)
+    position = models.PositiveSmallIntegerField()
+    title = models.CharField(max_length=255)
+    length_ms = models.PositiveIntegerField(null=True, blank=True)
+    class Meta:
+        ordering = ['disc', 'position']
 
 class Review(models.Model):
     id = models.AutoField(primary_key=True)

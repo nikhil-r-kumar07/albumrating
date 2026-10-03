@@ -46,3 +46,47 @@ class QueueItem(models.Model):
     class Meta:
         ordering = ['position']
         constraints = [models.UniqueConstraint(fields=['user', 'album'], name='album_once_per_queue')]
+
+class Favorite(models.Model):
+    # A user's top 4 albums, shown on their profile.
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    album = models.ForeignKey(Album, on_delete=models.CASCADE)
+    position = models.PositiveSmallIntegerField()
+    class Meta:
+        ordering = ['position']
+        constraints = [models.UniqueConstraint(fields=['user', 'album'], name='album_once_per_favorites')]
+
+class DiaryEntry(models.Model):
+    # One listen of an album. People can log the same album many times (relistens).
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='diary')
+    album = models.ForeignKey(Album, on_delete=models.CASCADE)
+    listened_on = models.DateField()
+    note = models.CharField(max_length=280, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['-listened_on', '-created']
+
+class Follow(models.Model):
+    id = models.AutoField(primary_key=True)
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following_set')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower_set')
+    created = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['follower', 'following'], name='follow_once')]
+
+class Notification(models.Model):
+    KINDS = [('like', 'Like'), ('comment', 'Comment'), ('follow', 'Follow')]
+    id = models.AutoField(primary_key=True)
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    actor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
+    kind = models.CharField(max_length=20, choices=KINDS)
+    # What it's about. Deleting the review or comment deletes the notification too.
+    review = models.ForeignKey('albums.Review', on_delete=models.CASCADE, null=True, blank=True, related_name='+')
+    artist_review = models.ForeignKey('albums.ArtistReview', on_delete=models.CASCADE, null=True, blank=True, related_name='+')
+    comment = models.ForeignKey('albums.Comment', on_delete=models.CASCADE, null=True, blank=True, related_name='+')
+    created = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+    class Meta:
+        ordering = ['-created']

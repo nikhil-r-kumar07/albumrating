@@ -5,9 +5,11 @@ from django.http import Http404
 from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.http import require_POST
-from .models import Album, Review, Artist, ArtistReview, Comment, CommentReport, ReviewLike
+from django.utils import timezone
+from .models import Album, Review, Artist, ArtistReview, Comment, CommentReport, ReviewLike, Track
 from . import musicbrainz, moderation
-from profiles.models import AlbumList, QueueItem
+from profiles.models import AlbumList, QueueItem, DiaryEntry, Favorite
+from profiles.notify import notify, unnotify
 from django.db.models import Avg, Count, Prefetch
 
 RATING_CHOICES = ['0', '0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5']
@@ -18,6 +20,15 @@ def rating_from(request):
     if rating in RATING_CHOICES:
         return Decimal(rating)
     return None
+
+def ensure_tracks(album):
+    # Load the tracklist from MusicBrainz the first time anyone opens the album, then keep it.
+    if album.mbid and not album.tracks_fetched:
+        tracks = musicbrainz.get_tracklist(album.mbid)
+        if tracks is not None:  # None means MusicBrainz failed; try again next time
+            Track.objects.bulk_create([Track(album=album, **track) for track in tracks])
+            album.tracks_fetched = True
+            album.save(update_fields=['tracks_fetched'])
 
 def with_comments(reviews):
     # Attach each review's visible comments as review.visible_comments, and its like count as review.like_count.
@@ -72,10 +83,21 @@ def show(request, id):
     stats = all_reviews.aggregate(average = Avg('rating'), count = Count('rating'))
     template_data['average'] = stats['average']
     template_data['rating_count'] = stats['count']
+    ensure_tracks(album)
+    tracks = list(album.tracks.all())
+    template_data['tracks'] = tracks
+    template_data['discs'] = len({track.disc for track in tracks})
+    template_data['total_ms'] = sum(track.length_ms or 0 for track in tracks)
     if request.user.is_authenticated:
         template_data['my_review'] = reviews.filter(user=request.user).first()
         template_data['my_lists'] = AlbumList.objects.filter(user=request.user).order_by('title')
         template_data['queue_item'] = QueueItem.objects.filter(user=request.user, album=album).first()
+        listens = DiaryEntry.objects.filter(user=request.user, album=album)
+        template_data['listen_count'] = listens.count()
+        template_data['last_listen'] = listens.first()
+        template_data['is_favorite'] = Favorite.objects.filter(user=request.user, album=album).exists()
+        template_data['favorites_full'] = request.user.favorites.count() >= 4
+        template_data['today'] = timezone.localdate()
     return render(request, 'albums/show.html', {'template_data': template_data})
 @login_required
 def create_review(request, id):
@@ -172,7 +194,9 @@ def save_comment(request, **parent):
     if moderation.is_blocked(text):
         messages.error(request, "Your comment wasn't posted because it contains language that isn't allowed here.")
         return
-    Comment.objects.create(user=request.user, text=text, **parent)
+    comment = Comment.objects.create(user=request.user, text=text, **parent)
+    review = parent.get('review') or parent.get('artist_review')
+    notify(review.user, request.user, 'comment', comment=comment, **parent)
 
 def comment_page(comment):
     # Where to send someone after they act on a comment: the review it belongs to.
@@ -233,5 +257,7 @@ def toggle_like(user, **target):
     like = ReviewLike.objects.filter(user=user, **target).first()
     if like:
         like.delete()
+        unnotify(review.user, user, 'like', **target)
     else:
         ReviewLike.objects.create(user=user, **target)
+        notify(review.user, user, 'like', **target)

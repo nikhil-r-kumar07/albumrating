@@ -1,0 +1,22 @@
+{# One diary entry as a list row. Needs: entry. Shows a Delete button to its owner. #}
+<li class="diary-row">
+  <span class="diary-day">
+    <span class="diary-month">{{ entry.listened_on|date:"M" }}</span>
+    <span class="diary-num">{{ entry.listened_on|date:"j" }}</span>
+  </span>
+  <a class="diary-cover" href="{% url 'albums.show' id=entry.album.id %}" tabindex="-1" aria-hidden="true">
+    {% include 'albums/cover.html' with album=entry.album %}
+  </a>
+  <div class="diary-info">
+    <a class="chart-title" href="{% url 'albums.show' id=entry.album.id %}">{{ entry.album.name }}</a>
+    <p class="chart-artist">{{ entry.album.artist }} · <time datetime="{{ entry.listened_on|date:'Y-m-d' }}">{{ entry.listened_on|date:"M j, Y" }}</time></p>
+    {% if entry.note %}<p class="diary-note">{{ entry.note }}</p>{% endif %}
+  </div>
+  {% if user == entry.user %}
+    <form class="inline-form" method="POST" action="{% url 'profiles.diary_delete' entry_id=entry.id %}" onsubmit="return confirm('Delete this diary entry?');">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button class="link-button link-muted" type="submit">Delete<span class="sr-only"> listen of {{ entry.album.name }}</span></button>
+    </form>
+  {% endif %}
+</li>

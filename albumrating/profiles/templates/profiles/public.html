@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load ratings %}
+
+{% block content %}
+  {% with person=template_data.person profile=template_data.profile %}
+    <section class="profile-header">
+      {% include 'profiles/avatar.html' with person=person size='xl' %}
+      <div class="profile-info">
+        <h1>{{ person.username }}</h1>
+        {% if person.get_full_name %}<p class="profile-name">{{ person.get_full_name }}</p>{% endif %}
+        {% if profile.bio %}<p class="profile-bio">{{ profile.bio|linebreaksbr }}</p>{% endif %}
+        <p class="profile-stats">
+          <span><strong>{{ template_data.review_count }}</strong> review{{ template_data.review_count|pluralize }}</span>
+          <span><strong>{{ template_data.followers }}</strong> follower{{ template_data.followers|pluralize }}</span>
+          <span><strong>{{ template_data.following }}</strong> following</span>
+        </p>
+        <div class="profile-actions">
+          {% if template_data.is_me %}
+            <a class="btn-outline" href="{% url 'profiles.edit' %}">Edit profile</a>
+          {% else %}
+            {% include 'profiles/follow_button.html' with following=template_data.is_following %}
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section">
+      <h2 class="section-title">Top 4</h2>
+      {% if template_data.favorites %}
+        <div class="album-grid favorites-grid">
+          {% for favorite in template_data.favorites %}
+            <article class="album-card">
+              <a href="{% url 'albums.show' id=favorite.album.id %}">
+                {% include 'albums/cover.html' with album=favorite.album %}
+                <h3>{{ favorite.album.name }}</h3>
+              </a>
+              <p class="album-meta"><a href="{% url 'albums.artist' id=favorite.album.artist.id %}">{{ favorite.album.artist }}</a></p>
+              {% if template_data.is_me %}
+                <form class="order-controls" method="POST" action="{% url 'profiles.favorite_item' item_id=favorite.id %}">
+                  {% csrf_token %}
+                  <button class="order-btn" type="submit" name="action" value="up" title="Move left" {% if forloop.first %}disabled{% endif %}><span aria-hidden="true">←</span><span class="sr-only">Move {{ favorite.album.name }} left</span></button>
+                  <button class="order-btn" type="submit" name="action" value="down" title="Move right" {% if forloop.last %}disabled{% endif %}><span aria-hidden="true">→</span><span class="sr-only">Move {{ favorite.album.name }} right</span></button>
+                  <button class="order-btn order-remove" type="submit" name="action" value="remove" title="Remove"><span aria-hidden="true">✕</span><span class="sr-only">Remove {{ favorite.album.name }} from top 4</span></button>
+                </form>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">
+          {% if template_data.is_me %}Pick your top 4: use "Add to top 4" on any album page.{% else %}{{ person.username }} hasn't picked a top 4 yet.{% endif %}
+        </div>
+      {% endif %}
+    </section>
+
+    <section class="home-section">
+      <h2 class="section-title">Recent reviews</h2>
+      {% if template_data.reviews %}
+        <div class="album-grid">
+          {% for review in template_data.reviews %}
+            <article class="album-card">
+              <a href="{% url 'albums.show' id=review.album.id %}#review-{{ review.id }}">
+                {% include 'albums/cover.html' with album=review.album %}
+                <h3>{{ review.album.name }}</h3>
+              </a>
+              <p class="album-meta"><a href="{% url 'albums.artist' id=review.album.artist.id %}">{{ review.album.artist }}</a></p>
+              {% if review.rating is not None %}
+                {% include 'albums/stars.html' with rating=review.rating label=person.username|add:' rated it ' %}
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">No reviews yet.</div>
+      {% endif %}
+    </section>
+
+    <section class="home-section">
+      <h2 class="section-title">Diary</h2>
+      {% if template_data.diary %}
+        <ul class="diary-list">
+          {% for entry in template_data.diary %}
+            {% include 'profiles/diary_row.html' %}
+          {% endfor %}
+        </ul>
+        {% if template_data.is_me %}<p class="results-note"><a href="{% url 'profiles.diary' %}">See your full diary →</a></p>{% endif %}
+      {% else %}
+        <div class="empty">No listens logged yet.</div>
+      {% endif %}
+    </section>
+
+    <section class="home-section">
+      <h2 class="section-title">Lists</h2>
+      {% if template_data.lists %}
+        <div class="list-grid">
+          {% for album_list in template_data.lists %}
+            <a class="list-card" href="{% url 'profiles.list' id=album_list.id %}">
+              <div class="list-stack" aria-hidden="true">
+                {% for item in album_list.items.all|slice:":4" %}
+                  {% include 'albums/cover.html' with album=item.album %}
+                {% empty %}
+                  <div class="album-cover"><span>♪</span></div>
+                {% endfor %}
+              </div>
+              <h3>{{ album_list.title }}</h3>
+              <p class="album-meta">{{ album_list.items.all|length }} album{{ album_list.items.all|length|pluralize }}</p>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">No lists yet.</div>
+      {% endif %}
+    </section>
+  {% endwith %}
+{% endblock %}

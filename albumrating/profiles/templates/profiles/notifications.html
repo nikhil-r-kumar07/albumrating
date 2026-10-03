@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>Notifications</h1>
+  </section>
+
+  <section>
+    {% if template_data.notifications %}
+      <ul class="feed-list">
+        {% for n in template_data.notifications %}
+          <li class="feed-item{% if not n.read %} is-unread{% endif %}">
+            <a href="{% url 'profiles.public' username=n.actor.username %}" tabindex="-1" aria-hidden="true">{% include 'profiles/avatar.html' with person=n.actor size='md' %}</a>
+            <div class="feed-body">
+              <p class="feed-line">
+                {% if not n.read %}<span class="sr-only">New: </span>{% endif %}
+                <a class="feed-user" href="{% url 'profiles.public' username=n.actor.username %}">{{ n.actor.username }}</a>
+                {% if n.kind == 'follow' %}
+                  started following you
+                {% elif n.review %}
+                  {% if n.kind == 'like' %}liked{% else %}commented on{% endif %}
+                  <a href="{% url 'albums.show' id=n.review.album.id %}#review-{{ n.review.id }}">your review of {{ n.review.album.name }}</a>
+                {% elif n.artist_review %}
+                  {% if n.kind == 'like' %}liked{% else %}commented on{% endif %}
+                  <a href="{% url 'albums.artist' id=n.artist_review.artist.id %}#artist-review-{{ n.artist_review.id }}">your review of {{ n.artist_review.artist.name }}</a>
+                {% endif %}
+              </p>
+              {% if n.kind == 'comment' and n.comment %}<p class="feed-quote">{{ n.comment.text|truncatechars:200 }}</p>{% endif %}
+              <p class="feed-when"><time datetime="{{ n.created|date:'c' }}">{{ n.created|timesince }} ago</time></p>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty">No notifications yet. You'll hear about it here when someone likes or comments on your reviews, or follows you.</div>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{# Follow / Unfollow button. Needs: person, following (True/False). #}
+{% if user.is_authenticated and user != person %}
+  <form class="inline-form" method="POST" action="{% url 'profiles.follow' username=person.username %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    {% if following %}
+      <button class="btn-outline is-following" type="submit" aria-pressed="true">Following<span class="sr-only">, click to unfollow {{ person.username }}</span></button>
+    {% else %}
+      <button class="btn" type="submit" aria-pressed="false">Follow<span class="sr-only"> {{ person.username }}</span></button>
+    {% endif %}
+  </form>
+{% endif %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>People</h1>
+    <p>Find your friends and follow them to see their reviews and listens in your feed.</p>
+    <form class="search-form" method="GET" action="{% url 'profiles.people' %}">
+      <input type="search" name="q" value="{{ template_data.query }}" placeholder="Search by username" aria-label="Search people">
+      <button type="submit">Search</button>
+    </form>
+  </section>
+
+  <section>
+    {% if template_data.people %}
+      <ul class="people-list">
+        {% for person in template_data.people %}
+          <li class="person-row">
+            <a class="person-link" href="{% url 'profiles.public' username=person.username %}">
+              {% include 'profiles/avatar.html' with size='md' %}
+              <span>
+                <span class="person-name">{{ person.username }}</span>
+                <span class="person-sub">{{ person.reviews }} review{{ person.reviews|pluralize }}</span>
+              </span>
+            </a>
+            {% if person.id in template_data.following_ids %}
+              {% include 'profiles/follow_button.html' with following=True %}
+            {% else %}
+              {% include 'profiles/follow_button.html' with following=False %}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty">{% if template_data.query %}No one matches "{{ template_data.query }}".{% else %}No one else has joined yet. Send your friends the link!{% endif %}</div>
+    {% endif %}
+  </section>
+{% endblock %}

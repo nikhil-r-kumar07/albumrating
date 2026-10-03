@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load ratings %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>Feed</h1>
+    <p>What the people you follow have been listening to.</p>
+  </section>
+
+  <section>
+    {% if template_data.events %}
+      <ul class="feed-list">
+        {% for event in template_data.events %}
+          {% with who=event.user item=event.item %}
+            <li class="feed-item">
+              <a href="{% url 'profiles.public' username=who.username %}" tabindex="-1" aria-hidden="true">{% include 'profiles/avatar.html' with person=who size='md' %}</a>
+              <div class="feed-body">
+                <p class="feed-line">
+                  <a class="feed-user" href="{% url 'profiles.public' username=who.username %}">{{ who.username }}</a>
+                  {% if event.kind == 'review' %}
+                    reviewed <a href="{% url 'albums.show' id=item.album.id %}#review-{{ item.id }}">{{ item.album.name }}</a> by {{ item.album.artist }}
+                  {% elif event.kind == 'artist_review' %}
+                    reviewed the artist <a href="{% url 'albums.artist' id=item.artist.id %}#artist-review-{{ item.id }}">{{ item.artist.name }}</a>
+                  {% elif event.kind == 'listen' %}
+                    listened to <a href="{% url 'albums.show' id=item.album.id %}">{{ item.album.name }}</a> by {{ item.album.artist }}
+                  {% elif event.kind == 'list' %}
+                    made a list: <a href="{% url 'profiles.list' id=item.id %}">{{ item.title }}</a>
+                  {% endif %}
+                </p>
+                {% if event.kind == 'review' or event.kind == 'artist_review' %}
+                  {% if item.rating is not None %}{% include 'albums/stars.html' with rating=item.rating %}{% endif %}
+                  <p class="feed-quote">{{ item.comment|truncatechars:200 }}</p>
+                {% elif event.kind == 'listen' and item.note %}
+                  <p class="feed-quote">{{ item.note }}</p>
+                {% endif %}
+                <p class="feed-when"><time datetime="{{ event.when|date:'c' }}">{{ event.when|timesince }} ago</time></p>
+              </div>
+              {% if event.kind == 'review' or event.kind == 'listen' %}
+                <a class="feed-cover" href="{% url 'albums.show' id=item.album.id %}" tabindex="-1" aria-hidden="true">{% include 'albums/cover.html' with album=item.album %}</a>
+              {% endif %}
+            </li>
+          {% endwith %}
+        {% endfor %}
+      </ul>
+    {% elif template_data.following_count %}
+      <div class="empty">The people you follow haven't done anything yet. Check back soon.</div>
+    {% else %}
+      <div class="empty">You're not following anyone yet. <a href="{% url 'profiles.people' %}">Find people to follow</a>.</div>
+    {% endif %}
+  </section>
+{% endblock %}
