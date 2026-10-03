@@ -80,7 +80,7 @@ def edit(request):
 @login_required
 def reviews(request):
     template_data = {}
-    template_data['title'] = 'My reviewed albums'
+    template_data['title'] = 'Reviews'
     template_data['reviews'] = (Review.objects.filter(user=request.user)
         .select_related('album', 'album__artist').order_by('-date'))
     return render(request, 'profiles/reviews.html', {'template_data': template_data})

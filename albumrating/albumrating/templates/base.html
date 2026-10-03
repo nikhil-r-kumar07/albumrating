@@ -1133,8 +1133,8 @@
           <div class="dropdown">
             <a class="nav-user" href="{% url 'profiles.reviews' %}">{% include 'profiles/avatar.html' with person=user %}{{ user.username }}</a>
             <div class="dropdown-menu">
-              <a href="{% url 'profiles.edit' %}">Edit profile</a>
-              <a href="{% url 'profiles.reviews' %}">My reviewed albums</a>
+              <a href="{% url 'profiles.edit' %}">Edit Profile</a>
+              <a href="{% url 'profiles.reviews' %}">Reviews</a>
               <a href="{% url 'profiles.lists' %}">Lists</a>
               <a href="{% url 'profiles.queue' %}">Queue</a>
               <div class="dropdown-divider" role="separator"></div>
