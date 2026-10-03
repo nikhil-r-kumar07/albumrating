@@ -2,39 +2,95 @@
 
 {% block content %}
   <section class="hero">
-    <h1>Top rated albums</h1>
-    <p>The highest-rated albums on IYM Reviews. One vote per person per album.</p>
+    <h1>
+      {% if template_data.chart == 'artists' %}Top rated artists
+      {% elif template_data.year %}Top rated albums of {{ template_data.year }}
+      {% else %}Top rated albums{% endif %}
+    </h1>
+    <p>The highest-rated on IYM Reviews. One vote per person.</p>
   </section>
 
-  <section>
-    <h2 class="section-title">Chart</h2>
-    {% if template_data.albums %}
-      <ol class="chart">
-        {% for album in template_data.albums %}
-          <li class="chart-row">
-            <span class="chart-rank">{{ forloop.counter }}</span>
-            <a class="chart-cover" href="{% url 'albums.show' id=album.id %}" tabindex="-1" aria-hidden="true">
-              {% include 'albums/cover.html' %}
-            </a>
-            <div class="chart-info">
-              <a class="chart-title" href="{% url 'albums.show' id=album.id %}">{{ album.name }}</a>
-              <p class="chart-artist">
-                <a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a>{% if album.year %} · {{ album.year }}{% endif %}
-              </p>
-            </div>
-            <div class="chart-score">
-              <span class="chart-average"><span class="star-on" aria-hidden="true">★</span> {{ album.average|floatformat:2 }}<span class="sr-only"> out of 5</span></span>
-              <span class="chart-count">{{ album.ratings }} rating{{ album.ratings|pluralize }}</span>
-            </div>
-          </li>
-        {% endfor %}
-      </ol>
-    {% else %}
-      <div class="empty">
-        No albums have {{ template_data.min_ratings }} or more ratings yet.
-        <a href="{% url 'albums.index' %}">Find an album</a> and rate it.
-      </div>
+  <div class="chart-controls">
+    <nav class="segmented" aria-label="Chart type">
+      <a href="{% url 'charts.index' %}?chart=albums"{% if template_data.chart == 'albums' %} aria-current="page"{% endif %}>Albums</a>
+      <a href="{% url 'charts.index' %}?chart=artists"{% if template_data.chart == 'artists' %} aria-current="page"{% endif %}>Artists</a>
+    </nav>
+
+    {% if template_data.chart == 'albums' %}
+      <form class="chart-filter" method="GET" action="{% url 'charts.index' %}">
+        <input type="hidden" name="chart" value="albums">
+        <label for="year">Year</label>
+        <select id="year" name="year">
+          <option value="">All time</option>
+          {% for y in template_data.years %}
+            <option value="{{ y }}"{% if template_data.year == y|stringformat:"d" %} selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn" type="submit">Show</button>
+      </form>
     {% endif %}
-    <p class="results-note">Albums need at least {{ template_data.min_ratings }} rating{{ template_data.min_ratings|pluralize }} to chart. Ties go to the album with more ratings.</p>
+  </div>
+
+  <section>
+    {% if template_data.chart == 'artists' %}
+      {% if template_data.artists %}
+        <ol class="chart">
+          {% for artist in template_data.artists %}
+            <li class="chart-row">
+              <span class="chart-rank">{{ forloop.counter }}</span>
+              <a class="chart-cover" href="{% url 'albums.artist' id=artist.id %}" tabindex="-1" aria-hidden="true">
+                <div class="artist-avatar chart-avatar">{{ artist.name|slice:":1" }}</div>
+              </a>
+              <div class="chart-info">
+                <a class="chart-title" href="{% url 'albums.artist' id=artist.id %}">{{ artist.name }}</a>
+              </div>
+              <div class="chart-score">
+                <span class="chart-average"><span class="star-on" aria-hidden="true">★</span> {{ artist.average|floatformat:2 }}<span class="sr-only"> out of 5</span></span>
+                <span class="chart-count">{{ artist.ratings }} rating{{ artist.ratings|pluralize }}</span>
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <div class="empty">
+          No artists have {{ template_data.min_ratings }} or more ratings yet.
+          Open an artist from any album page and review them.
+        </div>
+      {% endif %}
+    {% else %}
+      {% if template_data.albums %}
+        <ol class="chart">
+          {% for album in template_data.albums %}
+            <li class="chart-row">
+              <span class="chart-rank">{{ forloop.counter }}</span>
+              <a class="chart-cover" href="{% url 'albums.show' id=album.id %}" tabindex="-1" aria-hidden="true">
+                {% include 'albums/cover.html' %}
+              </a>
+              <div class="chart-info">
+                <a class="chart-title" href="{% url 'albums.show' id=album.id %}">{{ album.name }}</a>
+                <p class="chart-artist">
+                  <a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a>{% if album.year %} · {{ album.year }}{% endif %}
+                </p>
+              </div>
+              <div class="chart-score">
+                <span class="chart-average"><span class="star-on" aria-hidden="true">★</span> {{ album.average|floatformat:2 }}<span class="sr-only"> out of 5</span></span>
+                <span class="chart-count">{{ album.ratings }} rating{{ album.ratings|pluralize }}</span>
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <div class="empty">
+          {% if template_data.year %}
+            No albums from {{ template_data.year }} have {{ template_data.min_ratings }} or more ratings yet.
+            <a href="{% url 'charts.index' %}?chart=albums">See all time</a>.
+          {% else %}
+            No albums have {{ template_data.min_ratings }} or more ratings yet.
+            <a href="{% url 'albums.index' %}">Find an album</a> and rate it.
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+    <p class="results-note">A spot on the chart needs at least {{ template_data.min_ratings }} rating{{ template_data.min_ratings|pluralize }}. Ties go to whichever has more ratings.</p>
   </section>
 {% endblock %}
