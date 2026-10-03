@@ -1,0 +1,2 @@
+{# A user's round profile picture, or their initial if they haven't set one. Needs: person (a User). Optional: size ('sm', 'md' or 'lg'). #}
+<span class="avatar avatar-{{ size|default:'sm' }}" aria-hidden="true">{% if person.profile.avatar %}<img src="{{ person.profile.avatar.url }}" alt="" loading="lazy">{% else %}{{ person.username|slice:":1"|upper }}{% endif %}</span>

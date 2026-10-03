@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="auth-card feedback-card">
+    <h1>Edit profile</h1>
+
+    <form method="POST" action="{% url 'profiles.edit' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ template_data.form.non_field_errors }}
+
+      <div class="form-field avatar-field">
+        {{ template_data.form.avatar.errors }}
+        {% include 'profiles/avatar.html' with person=user size='lg' %}
+        <div>
+          <label for="{{ template_data.form.avatar.id_for_label }}">Profile picture <span class="star-picker-optional">(optional)</span></label>
+          {{ template_data.form.avatar }}
+          <div class="field-help">JPG, PNG, WebP or GIF, up to 5 MB. It's cropped to a square.</div>
+          {% if template_data.profile.avatar %}
+            <label class="checkbox-label">{{ template_data.form.remove_avatar }} Remove current picture</label>
+          {% endif %}
+        </div>
+      </div>
+
+      {% for field in template_data.form %}
+        {% if field.name != 'avatar' and field.name != 'remove_avatar' %}
+          <div class="form-field">
+            {{ field.errors }}
+            <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="star-picker-optional">(optional)</span>{% endif %}</label>
+            {{ field }}
+            {% if field.name == 'username' %}
+              <div class="field-help">This is your login name and what others see on your reviews.</div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+      <button type="submit">Save changes</button>
+    </form>
+  </section>
+{% endblock %}

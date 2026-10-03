@@ -509,6 +509,196 @@
 
     .flash-list { margin-top: 20px; }
 
+    .dropdown-menu { min-width: 180px; }
+
+    .avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      overflow: hidden;
+      vertical-align: middle;
+      background: var(--border);
+      border-radius: 50%;
+      color: var(--text);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-sm { width: 22px; height: 22px; font-size: 0.7rem; margin-right: 4px; }
+
+    .avatar-lg { width: 88px; height: 88px; font-size: 2rem; }
+
+    .nav-user { display: inline-flex; align-items: center; gap: 2px; }
+
+    .avatar-field {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+    }
+
+    .avatar-field input[type="file"] {
+      padding: 6px;
+      font-size: 0.85rem;
+    }
+
+    .checkbox-label {
+      display: flex !important;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-weight: 400 !important;
+      cursor: pointer;
+    }
+
+    .checkbox-label input { width: auto; }
+
+    .dropdown-divider {
+      height: 1px;
+      margin: 6px 0;
+      background: var(--border);
+    }
+
+    .hero-compact { padding: 48px 0 32px; }
+
+    .btn-outline {
+      display: inline-block;
+      padding: 7px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-outline:focus-visible,
+    .order-btn:focus-visible,
+    .add-to-list select:focus-visible,
+    .list-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .album-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .album-actions form { display: flex; align-items: center; gap: 8px; }
+
+    .queue-status { font-size: 0.85rem; color: var(--accent); }
+
+    .queue-status a { text-decoration: underline; }
+
+    .add-to-list select {
+      max-width: 200px;
+      padding: 7px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.85rem;
+    }
+
+    .chart-row-owner { grid-template-columns: 2.5rem 64px minmax(0, 1fr) auto; }
+
+    .order-controls { display: flex; gap: 4px; }
+
+    .order-btn {
+      width: 32px;
+      height: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .order-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+    .order-btn:disabled { opacity: 0.35; cursor: default; }
+
+    .order-remove:hover:not(:disabled) { border-color: #ff7b72; color: #ff7b72; }
+
+    .list-create { margin-top: 0; }
+
+    .list-create-title {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .list-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .list-card { display: block; border-radius: 8px; }
+
+    .list-card h3 { margin: 10px 0 2px; font-size: 1rem; }
+
+    .list-card:hover h3 { color: var(--accent); }
+
+    .list-stack {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .list-stack .album-cover { font-size: 1rem; border-radius: 4px; }
+
+    .list-header { padding: 48px 0 28px; }
+
+    .list-header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      line-height: 1.15;
+    }
+
+    .list-description {
+      max-width: 640px;
+      margin: 0 0 10px;
+      color: var(--muted);
+    }
+
+    .list-settings { margin-top: 32px; }
+
+    .list-settings summary {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .list-settings details form:first-of-type { max-width: 520px; margin-top: 16px; }
+
+    .list-delete { margin-top: 12px; }
+
+    .list-delete .link-button { color: #ff7b72; }
+
+    @media (max-width: 520px) {
+      .chart-row-owner {
+        grid-template-columns: 1.75rem 48px minmax(0, 1fr);
+      }
+      .chart-row-owner .order-controls { grid-column: 2 / -1; }
+    }
+
     .review-actions { margin-top: 8px; }
 
     .review-actions:empty { display: none; }
@@ -941,8 +1131,13 @@
         <a href="{% url 'charts.index' %}">Charts</a>
         {% if user.is_authenticated %}
           <div class="dropdown">
-            <a href="{% url 'accounts.logout' %}">{{ user.username }}</a>
+            <a class="nav-user" href="{% url 'profiles.reviews' %}">{% include 'profiles/avatar.html' with person=user %}{{ user.username }}</a>
             <div class="dropdown-menu">
+              <a href="{% url 'profiles.edit' %}">Edit profile</a>
+              <a href="{% url 'profiles.reviews' %}">My reviewed albums</a>
+              <a href="{% url 'profiles.lists' %}">Lists</a>
+              <a href="{% url 'profiles.queue' %}">Queue</a>
+              <div class="dropdown-divider" role="separator"></div>
               <a href="{% url 'accounts.logout' %}">Log out</a>
               <a class="dropdown-danger" href="{% url 'accounts.delete' %}">Delete account</a>
             </div>

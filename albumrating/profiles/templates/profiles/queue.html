@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>My queue</h1>
+    <p>The next albums you want to review, in order. Albums leave the queue once you review them.</p>
+  </section>
+
+  <section>
+    {% if template_data.items %}
+      <ol class="chart">
+        {% for item in template_data.items %}
+          <li class="chart-row chart-row-owner" id="item-{{ item.id }}">
+            <span class="chart-rank">{{ item.position }}</span>
+            <a class="chart-cover" href="{% url 'albums.show' id=item.album.id %}" tabindex="-1" aria-hidden="true">
+              {% include 'albums/cover.html' with album=item.album %}
+            </a>
+            <div class="chart-info">
+              <a class="chart-title" href="{% url 'albums.show' id=item.album.id %}">{{ item.album.name }}</a>
+              <p class="chart-artist"><a href="{% url 'albums.artist' id=item.album.artist.id %}">{{ item.album.artist }}</a>{% if item.album.year %} · {{ item.album.year }}{% endif %}</p>
+            </div>
+            <form class="order-controls" method="POST" action="{% url 'profiles.queue_item' item_id=item.id %}">
+              {% csrf_token %}
+              <button class="order-btn" type="submit" name="action" value="up" title="Move up" {% if forloop.first %}disabled{% endif %}><span aria-hidden="true">↑</span><span class="sr-only">Move {{ item.album.name }} up</span></button>
+              <button class="order-btn" type="submit" name="action" value="down" title="Move down" {% if forloop.last %}disabled{% endif %}><span aria-hidden="true">↓</span><span class="sr-only">Move {{ item.album.name }} down</span></button>
+              <button class="order-btn order-remove" type="submit" name="action" value="remove" title="Remove"><span aria-hidden="true">✕</span><span class="sr-only">Remove {{ item.album.name }} from queue</span></button>
+            </form>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <div class="empty">Your queue is empty. <a href="{% url 'albums.index' %}">Find albums</a> and use "Add to queue" on their pages.</div>
+    {% endif %}
+  </section>
+{% endblock %}

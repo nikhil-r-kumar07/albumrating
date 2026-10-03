@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'accounts',
     'charts',
     'feedback',
+    'profiles',
 ]
 
 MIDDLEWARE = [

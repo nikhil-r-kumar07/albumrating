@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% with album_list=template_data.list %}
+    <section class="list-header">
+      <p class="artist-label">List by {{ album_list.user.username }}</p>
+      <h1>{{ album_list.title }}</h1>
+      {% if album_list.description %}<p class="list-description">{{ album_list.description|linebreaksbr }}</p>{% endif %}
+      <p class="artist-sub">{{ template_data.items|length }} album{{ template_data.items|length|pluralize }} · Updated {{ album_list.updated|date:"M j, Y" }}</p>
+    </section>
+
+    <section>
+      {% if template_data.items %}
+        <ol class="chart">
+          {% for item in template_data.items %}
+            <li class="chart-row{% if template_data.is_owner %} chart-row-owner{% endif %}" id="item-{{ item.id }}">
+              <span class="chart-rank">{{ item.position }}</span>
+              <a class="chart-cover" href="{% url 'albums.show' id=item.album.id %}" tabindex="-1" aria-hidden="true">
+                {% include 'albums/cover.html' with album=item.album %}
+              </a>
+              <div class="chart-info">
+                <a class="chart-title" href="{% url 'albums.show' id=item.album.id %}">{{ item.album.name }}</a>
+                <p class="chart-artist"><a href="{% url 'albums.artist' id=item.album.artist.id %}">{{ item.album.artist }}</a>{% if item.album.year %} · {{ item.album.year }}{% endif %}</p>
+              </div>
+              {% if template_data.is_owner %}
+                <form class="order-controls" method="POST" action="{% url 'profiles.list_item' id=album_list.id item_id=item.id %}">
+                  {% csrf_token %}
+                  <button class="order-btn" type="submit" name="action" value="up" title="Move up" {% if forloop.first %}disabled{% endif %}><span aria-hidden="true">↑</span><span class="sr-only">Move {{ item.album.name }} up</span></button>
+                  <button class="order-btn" type="submit" name="action" value="down" title="Move down" {% if forloop.last %}disabled{% endif %}><span aria-hidden="true">↓</span><span class="sr-only">Move {{ item.album.name }} down</span></button>
+                  <button class="order-btn order-remove" type="submit" name="action" value="remove" title="Remove"><span aria-hidden="true">✕</span><span class="sr-only">Remove {{ item.album.name }}</span></button>
+                </form>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <div class="empty">
+          This list is empty.
+          {% if template_data.is_owner %}<a href="{% url 'albums.index' %}">Find albums</a> and use "Add to list" on their pages.{% endif %}
+        </div>
+      {% endif %}
+    </section>
+
+    {% if template_data.is_owner %}
+      <section class="list-settings">
+        <details>
+          <summary>Edit list details</summary>
+          <form method="POST" action="{% url 'profiles.list_update' id=album_list.id %}">
+            {% csrf_token %}
+            <div class="form-field">
+              <label for="title">Title</label>
+              <input id="title" type="text" name="title" maxlength="100" required value="{{ album_list.title }}">
+            </div>
+            <div class="form-field">
+              <label for="description">Description <span class="star-picker-optional">(optional)</span></label>
+              <textarea id="description" name="description" rows="3" maxlength="500">{{ album_list.description }}</textarea>
+            </div>
+            <button class="btn" type="submit">Save details</button>
+          </form>
+          <form class="list-delete" method="POST" action="{% url 'profiles.list_delete' id=album_list.id %}" onsubmit="return confirm('Delete this list? The albums themselves stay on the site.');">
+            {% csrf_token %}
+            <button class="link-button" type="submit">Delete this list</button>
+          </form>
+        </details>
+        <p class="results-note">Anyone with the link to this page can see the list. Only you can change it.</p>
+      </section>
+    {% endif %}
+  {% endwith %}
+{% endblock %}

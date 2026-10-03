@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from .models import Album, Review, Artist, ArtistReview, Comment, CommentReport, ReviewLike
 from . import musicbrainz, moderation
+from profiles.models import AlbumList, QueueItem
 from django.db.models import Avg, Count, Prefetch
 
 def rating_from(request):
@@ -17,8 +18,8 @@ def rating_from(request):
 
 def with_comments(reviews):
     # Attach each review's visible comments as review.visible_comments, and its like count as review.like_count.
-    visible = Comment.objects.filter(hidden=False).select_related('user').order_by('date')
-    return reviews.select_related('user').annotate(like_count=Count('likes', distinct=True)).prefetch_related(
+    visible = Comment.objects.filter(hidden=False).select_related('user', 'user__profile').order_by('date')
+    return reviews.select_related('user', 'user__profile').annotate(like_count=Count('likes', distinct=True)).prefetch_related(
         Prefetch('comments', queryset=visible, to_attr='visible_comments'))
 
 def my_likes(request, field):
@@ -70,6 +71,8 @@ def show(request, id):
     template_data['rating_count'] = stats['count']
     if request.user.is_authenticated:
         template_data['my_review'] = reviews.filter(user=request.user).first()
+        template_data['my_lists'] = AlbumList.objects.filter(user=request.user).order_by('title')
+        template_data['queue_item'] = QueueItem.objects.filter(user=request.user, album=album).first()
     return render(request, 'albums/show.html', {'template_data': template_data})
 @login_required
 def create_review(request, id):
@@ -81,6 +84,12 @@ def create_review(request, id):
         review.comment = request.POST['comment']
         review.rating = rating_from(request)
         review.save()
+        # Reviewing an album takes it off your queue.
+        if QueueItem.objects.filter(user=request.user, album=album).delete()[0]:
+            for number, item in enumerate(request.user.queue.order_by('position'), start=1):
+                if item.position != number:
+                    item.position = number
+                    item.save(update_fields=['position'])
     return redirect('albums.show', id=id)
 @login_required
 def edit_review(request, id, review_id):

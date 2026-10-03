@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>My lists</h1>
+    <p>Rank your favourites, collect a theme, share them with friends.</p>
+  </section>
+
+  <section class="auth-card feedback-card list-create">
+    <h2 class="list-create-title">New list</h2>
+    {% if template_data.error %}
+      <div class="alert alert-danger" role="alert">{{ template_data.error }}</div>
+    {% endif %}
+    <form method="POST" action="{% url 'profiles.lists' %}">
+      {% csrf_token %}
+      <div class="form-field">
+        <label for="title">Title</label>
+        <input id="title" type="text" name="title" maxlength="100" required placeholder="e.g. Best albums of the 70s">
+      </div>
+      <div class="form-field">
+        <label for="description">Description <span class="star-picker-optional">(optional)</span></label>
+        <textarea id="description" name="description" rows="2" maxlength="500"></textarea>
+      </div>
+      <button type="submit">Create list</button>
+    </form>
+  </section>
+
+  <section class="home-section">
+    <h2 class="section-title">Your lists</h2>
+    {% if template_data.lists %}
+      <div class="list-grid">
+        {% for album_list in template_data.lists %}
+          <a class="list-card" href="{% url 'profiles.list' id=album_list.id %}">
+            <div class="list-stack" aria-hidden="true">
+              {% for item in album_list.items.all|slice:":4" %}
+                {% include 'albums/cover.html' with album=item.album %}
+              {% empty %}
+                <div class="album-cover"><span>♪</span></div>
+              {% endfor %}
+            </div>
+            <h3>{{ album_list.title }}</h3>
+            <p class="album-meta">{{ album_list.items.all|length }} album{{ album_list.items.all|length|pluralize }}</p>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No lists yet. Create one above, then add albums from any album page.</div>
+    {% endif %}
+  </section>
+{% endblock %}

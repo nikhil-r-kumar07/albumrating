@@ -18,6 +18,42 @@
           </p>
         {% endif %}
         <p class="album-description">{{ album.description }}</p>
+        {% if user.is_authenticated %}
+          <div class="album-actions">
+            {% if template_data.queue_item %}
+              <form method="POST" action="{% url 'profiles.queue_item' item_id=template_data.queue_item.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <span class="queue-status">✓ #{{ template_data.queue_item.position }} in your <a href="{% url 'profiles.queue' %}">queue</a></span>
+                <button class="link-button link-muted" type="submit" name="action" value="remove">Remove</button>
+              </form>
+            {% else %}
+              <form method="POST" action="{% url 'profiles.queue_add' %}">
+                {% csrf_token %}
+                <input type="hidden" name="album" value="{{ album.id }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button class="btn-outline" type="submit">+ Add to queue</button>
+              </form>
+            {% endif %}
+
+            {% if template_data.my_lists %}
+              <form class="add-to-list" method="POST" action="{% url 'profiles.list_add' %}">
+                {% csrf_token %}
+                <input type="hidden" name="album" value="{{ album.id }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <label class="sr-only" for="add-to-list">Choose a list</label>
+                <select id="add-to-list" name="list">
+                  {% for album_list in template_data.my_lists %}
+                    <option value="{{ album_list.id }}">{{ album_list.title }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn-outline" type="submit">+ Add to list</button>
+              </form>
+            {% else %}
+              <a class="btn-outline" href="{% url 'profiles.lists' %}">+ Create a list</a>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
     </section>
 
@@ -27,7 +63,7 @@
       {% for review in template_data.reviews %}
         <article class="review" id="review-{{ review.id }}">
           <div class="review-meta">
-            Review by {{ review.user.username }} · {{ review.date|date:"M j, Y" }}
+            {% include 'profiles/avatar.html' with person=review.user %} Review by {{ review.user.username }} · {{ review.date|date:"M j, Y" }}
             {% if user == review.user %}
               · <a href="{% url 'albums.edit_review' id=album.id review_id=review.id %}">Edit</a>
               · <form class="inline-form" method="POST" action="{% url 'albums.delete_review' id=album.id review_id=review.id %}" onsubmit="return confirm('Delete this review?');">

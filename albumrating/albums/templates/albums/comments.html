@@ -3,7 +3,7 @@
   {% for comment in review.visible_comments %}
     <div class="comment">
       <p class="comment-meta">
-        <strong>{{ comment.user.username }}</strong> · {{ comment.date|date:"M j, Y" }}
+        {% include 'profiles/avatar.html' with person=comment.user %} <strong>{{ comment.user.username }}</strong> · {{ comment.date|date:"M j, Y" }}
         {% if user == comment.user or user == review.user or user.is_staff %}
           · <form class="inline-form" method="POST" action="{% url 'albums.delete_comment' comment_id=comment.id %}" onsubmit="return confirm('Delete this comment?');">
               {% csrf_token %}

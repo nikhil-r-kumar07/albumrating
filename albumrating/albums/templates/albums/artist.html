@@ -49,7 +49,7 @@
       {% for review in template_data.reviews %}
         <article class="review" id="artist-review-{{ review.id }}">
           <div class="review-meta">
-            Review by {{ review.user.username }} · {{ review.date|date:"M j, Y" }}
+            {% include 'profiles/avatar.html' with person=review.user %} Review by {{ review.user.username }} · {{ review.date|date:"M j, Y" }}
             {% if user == review.user %}
               · <a href="{% url 'albums.edit_artist_review' id=artist.id review_id=review.id %}">Edit</a>
               · <form class="inline-form" method="POST" action="{% url 'albums.delete_artist_review' id=artist.id review_id=review.id %}" onsubmit="return confirm('Delete this review?');">

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>My reviewed albums</h1>
+    <p>{{ template_data.reviews|length }} album{{ template_data.reviews|length|pluralize }} reviewed.</p>
+  </section>
+
+  <section>
+    {% if template_data.reviews %}
+      <div class="album-grid">
+        {% for review in template_data.reviews %}
+          {% with album=review.album %}
+            <article class="album-card">
+              <a href="{% url 'albums.show' id=album.id %}">
+                {% include 'albums/cover.html' %}
+                <h3>{{ album.name }}</h3>
+              </a>
+              <p class="album-meta"><a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a></p>
+              {% if review.rating is not None %}
+                <div class="review-stars" role="img" aria-label="You rated it {{ review.rating }} out of 5 stars">
+                  {% for i in "12345" %}<span class="{% if forloop.counter <= review.rating %}star-on{% else %}star-off{% endif %}">★</span>{% endfor %}
+                </div>
+              {% else %}
+                <p class="diary-unrated">Not rated</p>
+              {% endif %}
+              <p class="diary-date">{{ review.date|date:"M j, Y" }}</p>
+            </article>
+          {% endwith %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">You haven't reviewed any albums yet. <a href="{% url 'albums.index' %}">Find one</a> to get started.</div>
+    {% endif %}
+  </section>
+{% endblock %}
