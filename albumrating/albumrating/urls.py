@@ -25,6 +25,7 @@ urlpatterns = [
     path('albums/', include('albums.urls')),
     path('accounts/', include('accounts.urls')),
     path('charts/', include('charts.urls')),
+    path('feedback/', include('feedback.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

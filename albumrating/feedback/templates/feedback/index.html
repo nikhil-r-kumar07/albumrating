@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="auth-card feedback-card">
+    <h1>Suggest an improvement</h1>
+    <p class="danger-note">Found a bug, want a feature, or spotted wrong album info? Tell me here.</p>
+
+    {% if request.GET.sent %}
+      <div class="alert alert-success" role="status">Thanks! Your request was sent.</div>
+    {% endif %}
+    {% if template_data.error %}
+      <div class="alert alert-danger" role="alert">{{ template_data.error }}</div>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+      <form method="POST" action="{% url 'feedback.index' %}">
+        {% csrf_token %}
+        <div class="form-field">
+          <label for="category">What's it about?</label>
+          <select id="category" name="category">
+            {% for value, label in template_data.categories %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="message">Your request</label>
+          <textarea id="message" name="message" rows="5" maxlength="1000" required></textarea>
+        </div>
+        <button type="submit">Send request</button>
+      </form>
+    {% else %}
+      <p class="review-prompt"><a href="{% url 'accounts.login' %}">Log in</a> to send a request.</p>
+    {% endif %}
+  </section>
+
+  {% if template_data.my_requests %}
+    <section class="feedback-list">
+      <h2 class="section-title">Your requests</h2>
+      {% for item in template_data.my_requests %}
+        <article class="review">
+          <p class="review-meta">
+            {{ item.get_category_display }} · {{ item.date|date:"M j, Y" }}
+            <span class="status-badge status-{{ item.status }}">{{ item.get_status_display }}</span>
+          </p>
+          <p class="review-comment">{{ item.message|linebreaksbr }}</p>
+        </article>
+      {% endfor %}
+    </section>
+  {% endif %}
+{% endblock %}

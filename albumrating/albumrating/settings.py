@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'albums',
     'accounts',
     'charts',
+    'feedback',
 ]
 
 MIDDLEWARE = [
