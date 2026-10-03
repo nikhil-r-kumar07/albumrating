@@ -26,7 +26,7 @@ class Review(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     album = models.ForeignKey(Album, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.PositiveSmallIntegerField(null = True, blank = True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, null = True, blank = True)  # 0 to 5 in half steps
     class Meta:
         constraints = [models.UniqueConstraint(fields=['album', 'user'], name='one_review_per_user_per_album')]
     def __str__(self):
@@ -38,7 +38,7 @@ class ArtistReview(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.PositiveSmallIntegerField(null = True, blank = True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, null = True, blank = True)  # 0 to 5 in half steps
     class Meta:
         constraints = [models.UniqueConstraint(fields=['artist', 'user'], name='one_review_per_user_per_artist')]
     def __str__(self):

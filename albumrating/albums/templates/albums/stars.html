@@ -1,0 +1,2 @@
+{% load ratings %}{# Five stars showing a rating, with half stars. Needs: rating. Optional: label (spoken description). #}
+<div class="review-stars" role="img" aria-label="{{ label|default:'' }}{{ rating|rating_text }} out of 5 stars">{% for state in rating|star_states %}<span class="star-{{ state }}">★</span>{% endfor %}</div>

@@ -18,9 +18,7 @@
               </a>
               <p class="album-meta"><a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a></p>
               {% if review.rating is not None %}
-                <div class="review-stars" role="img" aria-label="You rated it {{ review.rating }} out of 5 stars">
-                  {% for i in "12345" %}<span class="{% if forloop.counter <= review.rating %}star-on{% else %}star-off{% endif %}">★</span>{% endfor %}
-                </div>
+                {% include 'albums/stars.html' with rating=review.rating label='You rated it ' %}
               {% else %}
                 <p class="diary-unrated">Not rated</p>
               {% endif %}

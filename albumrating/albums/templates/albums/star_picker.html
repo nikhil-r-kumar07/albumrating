@@ -1,15 +1,17 @@
-{# Star rating picker for review forms. Pass current=<rating> to preselect a value; no rating means unrated. #}
+{% load ratings %}{# Star rating picker (half stars) for review forms. Pass current=<rating> to preselect a value; no rating means unrated. #}
+{% half_star_values as values %}
 <fieldset class="star-picker">
   <legend>Your rating <span class="star-picker-optional">(optional)</span></legend>
   <div class="star-picker-options">
     <input class="sr-only" type="radio" id="rating-none" name="rating" value=""{% if current is None %} checked{% endif %}>
-    {% for value in "012345" %}
-      <input class="sr-only" type="radio" id="rating-{{ value }}" name="rating" value="{{ value }}"{% if current|stringformat:"d" == value %} checked{% endif %}>
-      {% if value == "0" %}
-        <label class="star-zero" for="rating-0" title="0 stars">0<span class="sr-only"> stars</span></label>
-      {% else %}
-        <label class="star" for="rating-{{ value }}" title="{{ value }} star{{ value|pluralize }}"><span aria-hidden="true">★</span><span class="sr-only">{{ value }} star{{ value|pluralize }}</span></label>
-      {% endif %}
+    <input class="sr-only" type="radio" id="rating-0" name="rating" value="0"{% if current is not None and current|rating_text == "0" %} checked{% endif %}>
+    <label class="star-zero" for="rating-0" title="0 stars">0<span class="sr-only"> stars</span></label>
+    {% for value, slug, side in values %}
+      <input class="sr-only" type="radio" id="rating-{{ slug }}" name="rating" value="{{ value }}"{% if current is not None and current|rating_text == value %} checked{% endif %}>
+      <label class="star star-{{ side }}" for="rating-{{ slug }}" title="{{ value }} star{{ value|pluralize }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.4 7 .7-5.3 4.7 1.6 6.9L12 17.6l-6.2 3.6 1.6-6.9L2.1 9.6l7-.7z"/></svg>
+        <span class="sr-only">{{ value }} star{{ value|pluralize }}</span>
+      </label>
     {% endfor %}
     <span class="star-picker-caption" aria-hidden="true"></span>
     <label class="star-clear" for="rating-none">Clear<span class="sr-only"> rating (leave unrated)</span></label>

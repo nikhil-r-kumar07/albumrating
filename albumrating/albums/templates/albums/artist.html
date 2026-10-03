@@ -59,9 +59,7 @@
             {% endif %}
           </div>
           {% if review.rating is not None %}
-            <div class="review-stars" role="img" aria-label="{{ review.rating }} out of 5 stars">
-              {% for i in "12345" %}<span class="{% if forloop.counter <= review.rating %}star-on{% else %}star-off{% endif %}">★</span>{% endfor %}
-            </div>
+            {% include 'albums/stars.html' with rating=review.rating %}
           {% endif %}
           <p class="review-comment">{{ review.comment }}</p>
           {% url 'albums.like_artist_review' review_id=review.id as like_url %}

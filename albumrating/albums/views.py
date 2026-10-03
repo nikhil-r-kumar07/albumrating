@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
@@ -9,11 +10,13 @@ from . import musicbrainz, moderation
 from profiles.models import AlbumList, QueueItem
 from django.db.models import Avg, Count, Prefetch
 
+RATING_CHOICES = ['0', '0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5']
+
 def rating_from(request):
-    # The star picker sends '0'-'5', or '' when left unrated.
+    # The star picker sends '0' to '5' in half steps, or '' when left unrated.
     rating = request.POST.get('rating', '')
-    if rating in ['0', '1', '2', '3', '4', '5']:
-        return int(rating)
+    if rating in RATING_CHOICES:
+        return Decimal(rating)
     return None
 
 def with_comments(reviews):
