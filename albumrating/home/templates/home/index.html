@@ -10,8 +10,39 @@
     </form>
   </section>
 
-  <section>
-    <h2 class="section-title">Recently reviewed</h2>
+  {% if user.is_authenticated %}
+    <section class="home-section">
+      <h2 class="section-title">Your recent reviews</h2>
+      {% if template_data.my_reviews %}
+        <div class="album-grid">
+          {% for review in template_data.my_reviews %}
+            {% with album=review.album %}
+              <article class="album-card">
+                <a href="{% url 'albums.show' id=album.id %}">
+                  {% include 'albums/cover.html' %}
+                  <h3>{{ album.name }}</h3>
+                </a>
+                <p class="album-meta"><a href="{% url 'albums.artist' id=album.artist.id %}">{{ album.artist }}</a></p>
+                {% if review.rating is not None %}
+                  <div class="review-stars" role="img" aria-label="You rated it {{ review.rating }} out of 5 stars">
+                    {% for i in "12345" %}<span class="{% if forloop.counter <= review.rating %}star-on{% else %}star-off{% endif %}">★</span>{% endfor %}
+                  </div>
+                {% else %}
+                  <p class="diary-unrated">Not rated</p>
+                {% endif %}
+                <p class="diary-date">{{ review.date|date:"M j, Y" }}</p>
+              </article>
+            {% endwith %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty">You haven't reviewed anything yet. <a href="{% url 'albums.index' %}">Find an album</a> to start your diary.</div>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <section class="home-section">
+    <h2 class="section-title">Recently reviewed by everyone</h2>
     {% if template_data.albums %}
       <div class="album-grid">
         {% for album in template_data.albums %}
