@@ -44,7 +44,13 @@
     </section>
 
     <section class="reviews">
-      <h2 class="section-title">Reviews of {{ artist.name }}</h2>
+      <h2 class="section-title" id="reviews">Reviews of {{ artist.name }}</h2>
+      {% if template_data.reviews|length > 1 %}
+        <nav class="segmented review-sort" aria-label="Sort reviews">
+          <a href="?sort=newest#reviews"{% if template_data.sort == 'newest' %} aria-current="page"{% endif %}>Newest</a>
+          <a href="?sort=liked#reviews"{% if template_data.sort == 'liked' %} aria-current="page"{% endif %}>Most liked</a>
+        </nav>
+      {% endif %}
 
       {% for review in template_data.reviews %}
         <article class="review" id="artist-review-{{ review.id }}">

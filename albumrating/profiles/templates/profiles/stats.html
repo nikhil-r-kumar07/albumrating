@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load ratings %}
+
+{% block content %}
+  {% with person=template_data.person s=template_data.stats %}
+    <section class="list-header">
+      <p class="artist-label"><a class="user-link" href="{% url 'profiles.public' username=person.username %}">← {{ person.username }}</a></p>
+      <h1>{% if template_data.is_me %}Your stats{% else %}{{ person.username }}'s stats{% endif %}</h1>
+    </section>
+
+    <section class="stat-tiles" aria-label="Totals">
+      <div class="stat-tile"><span class="stat-label">Albums reviewed</span><span class="stat-value">{{ s.reviews }}</span></div>
+      <div class="stat-tile"><span class="stat-label">Average rating</span><span class="stat-value">{% if s.average is not None %}<span class="star-on" aria-hidden="true">★</span> {{ s.average|floatformat:2 }}{% else %}–{% endif %}</span></div>
+      <div class="stat-tile"><span class="stat-label">Listens logged</span><span class="stat-value">{{ s.listens }}</span></div>
+      <div class="stat-tile"><span class="stat-label">Hours listened</span><span class="stat-value">{{ s.hours|floatformat:"-1" }}</span></div>
+      <div class="stat-tile"><span class="stat-label">Artists reviewed</span><span class="stat-value">{{ s.artists }}</span></div>
+      <div class="stat-tile"><span class="stat-label">Likes received</span><span class="stat-value">{{ s.likes_received }}</span></div>
+    </section>
+    <p class="results-note stats-note">Hours count logged listens of albums whose tracklist has loaded.</p>
+
+    {% if s.reviews or s.listens %}
+      <section class="home-section">
+        <h2 class="section-title">Rating spread</h2>
+        {% if s.rated %}
+          <p class="chart-sub">How {% if template_data.is_me %}you rate{% else %}{{ person.username }} rates{% endif %} albums, from 0 to 5 stars.</p>
+          {% include 'profiles/column_chart.html' with bars=s.rating_bars caption='Number of albums at each star rating' unit='album' tone='gold' axis_label='Stars' %}
+        {% else %}
+          <div class="empty">No rated reviews yet.</div>
+        {% endif %}
+      </section>
+
+      <section class="home-section">
+        <h2 class="section-title">Listens, last 12 months</h2>
+        {% include 'profiles/column_chart.html' with bars=s.month_bars caption='Listens logged per month, last 12 months' unit='listen' axis_label='Month' %}
+      </section>
+
+      {% if s.decade_bars %}
+        <section class="home-section">
+          <h2 class="section-title">Albums by decade</h2>
+          <p class="chart-sub">Favourite decade: <strong>{{ s.favourite_decade }}s</strong></p>
+          {% include 'profiles/column_chart.html' with bars=s.decade_bars caption='Albums reviewed per decade of release' unit='album' axis_label='Decade' %}
+        </section>
+      {% endif %}
+
+      {% if s.top_artists %}
+        <section class="home-section">
+          <h2 class="section-title">Most-reviewed artists</h2>
+          <ol class="chart">
+            {% for row in s.top_artists %}
+              <li class="chart-row chart-row-simple">
+                <span class="chart-rank">{{ forloop.counter }}</span>
+                <div class="chart-info"><a class="chart-title" href="{% url 'albums.artist' id=row.artist.id %}">{{ row.artist.name }}</a></div>
+                <div class="chart-score">
+                  <span class="chart-average">{{ row.count }} album{{ row.count|pluralize }}</span>
+                  {% if row.average is not None %}<span class="chart-count">avg <span class="star-on" aria-hidden="true">★</span> {{ row.average|floatformat:1 }}</span>{% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% endif %}
+    {% else %}
+      <div class="empty home-section">No reviews or listens yet, so there's nothing to chart. {% if template_data.is_me %}<a href="{% url 'albums.index' %}">Find an album</a> to start.{% endif %}</div>
+    {% endif %}
+  {% endwith %}
+{% endblock %}

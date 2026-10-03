@@ -1,0 +1,23 @@
+{# Single-series column chart. Needs: bars (from stats._bars), caption, unit ("rating", "listen"...). Optional: tone ('gold' or 'green'). #}
+<figure class="col-chart col-chart-{{ tone|default:'green' }}">
+  <div class="col-plot" role="list" aria-label="{{ caption }}" style="grid-template-columns: repeat({{ bars|length }}, minmax(0, 1fr));">
+    {% for bar in bars %}
+      <div class="col-slot" role="listitem" tabindex="0" aria-label="{{ bar.full_label|default:bar.label }}: {{ bar.count }} {{ unit }}{{ bar.count|pluralize }}">
+        <span class="col-bar" style="height: {{ bar.height }}%;">{% if bar.is_peak %}<span class="col-peak" aria-hidden="true">{{ bar.count }}</span>{% endif %}</span>
+        <span class="col-tip" aria-hidden="true">{{ bar.full_label|default:bar.label }}<strong>{{ bar.count }} {{ unit }}{{ bar.count|pluralize }}</strong></span>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="col-axis" aria-hidden="true" style="grid-template-columns: repeat({{ bars|length }}, minmax(0, 1fr));">
+    {% for bar in bars %}<span>{{ bar.label }}</span>{% endfor %}
+  </div>
+  <details class="chart-table">
+    <summary>Show as table</summary>
+    <table>
+      <thead><tr><th scope="col">{{ axis_label|default:'Group' }}</th><th scope="col">{{ unit|capfirst }}s</th></tr></thead>
+      <tbody>
+        {% for bar in bars %}<tr><td>{{ bar.full_label|default:bar.label }}</td><td>{{ bar.count }}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </details>
+</figure>

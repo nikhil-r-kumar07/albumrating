@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load ratings %}
+
+{% block content %}
+  {% with person=template_data.person w=template_data.wrapped %}
+    {% if not template_data.is_open %}
+      <section class="hero">
+        <h1>{{ template_data.year }} in review</h1>
+        <p>Year in review opens on December 25 and is here until the end of the year. Check back then!</p>
+        <p class="error-links"><a class="btn-outline" href="{% url 'profiles.stats' username=person.username %}">See stats instead</a></p>
+      </section>
+    {% else %}
+      <section class="wrapped-hero">
+        <p class="artist-label"><a class="user-link" href="{% url 'profiles.public' username=person.username %}">{{ person.username }}</a></p>
+        <h1>{% if template_data.is_me %}Your{% else %}{{ person.username }}'s{% endif %} {{ w.year }} in music</h1>
+      </section>
+
+      {% if w.empty %}
+        <div class="empty">No reviews or listens logged in {{ w.year }}. There's still time!</div>
+      {% else %}
+        <section class="wrapped-grid">
+          <div class="wrapped-card wrapped-big">
+            <span class="stat-label">Albums heard</span>
+            <span class="wrapped-number">{{ w.albums_heard }}</span>
+            <span class="wrapped-sub">{{ w.reviews }} review{{ w.reviews|pluralize }} · {{ w.listens }} listen{{ w.listens|pluralize }} logged</span>
+          </div>
+          {% if w.hours %}
+            <div class="wrapped-card">
+              <span class="stat-label">Time listening</span>
+              <span class="wrapped-number">{{ w.hours|floatformat:"-1" }}<small> hrs</small></span>
+            </div>
+          {% endif %}
+          {% if w.average is not None %}
+            <div class="wrapped-card">
+              <span class="stat-label">Average rating</span>
+              <span class="wrapped-number"><span class="star-on" aria-hidden="true">★</span> {{ w.average|floatformat:2 }}</span>
+            </div>
+          {% endif %}
+          {% if w.top_artist %}
+            <div class="wrapped-card">
+              <span class="stat-label">Artist of the year</span>
+              <a class="wrapped-name" href="{% url 'albums.artist' id=w.top_artist.artist.id %}">{{ w.top_artist.artist.name }}</a>
+              <span class="wrapped-sub">Reviewed or played {{ w.top_artist.count }} time{{ w.top_artist.count|pluralize }}</span>
+            </div>
+          {% endif %}
+          {% if w.most_played %}
+            <div class="wrapped-card wrapped-album">
+              <span class="stat-label">On repeat</span>
+              <a class="wrapped-cover" href="{% url 'albums.show' id=w.most_played.album.id %}" tabindex="-1" aria-hidden="true">{% include 'albums/cover.html' with album=w.most_played.album %}</a>
+              <a class="wrapped-name" href="{% url 'albums.show' id=w.most_played.album.id %}">{{ w.most_played.album.name }}</a>
+              <span class="wrapped-sub">{{ w.most_played.album.artist }} · {{ w.most_played.count }} listen{{ w.most_played.count|pluralize }}</span>
+            </div>
+          {% endif %}
+          {% if w.busiest_month %}
+            <div class="wrapped-card">
+              <span class="stat-label">Busiest month</span>
+              <span class="wrapped-name">{{ w.busiest_month.name }}</span>
+              <span class="wrapped-sub">You reviewed or played {{ w.busiest_month.count }} time{{ w.busiest_month.count|pluralize }}</span>
+            </div>
+          {% endif %}
+          <div class="wrapped-card">
+            <span class="stat-label">Likes on reviews</span>
+            <span class="wrapped-number">{{ w.likes }}</span>
+          </div>
+        </section>
+
+        {% if w.top_albums %}
+          <section class="home-section">
+            <h2 class="section-title">Top rated of {{ w.year }}</h2>
+            <ol class="chart">
+              {% for review in w.top_albums %}
+                <li class="chart-row">
+                  <span class="chart-rank">{{ forloop.counter }}</span>
+                  <a class="chart-cover" href="{% url 'albums.show' id=review.album.id %}" tabindex="-1" aria-hidden="true">{% include 'albums/cover.html' with album=review.album %}</a>
+                  <div class="chart-info">
+                    <a class="chart-title" href="{% url 'albums.show' id=review.album.id %}">{{ review.album.name }}</a>
+                    <p class="chart-artist">{{ review.album.artist }}</p>
+                  </div>
+                  <div class="chart-score">{% include 'albums/stars.html' with rating=review.rating %}</div>
+                </li>
+              {% endfor %}
+            </ol>
+          </section>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endwith %}
+{% endblock %}

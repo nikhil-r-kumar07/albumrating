@@ -13,6 +13,8 @@
           <span><strong>{{ template_data.review_count }}</strong> review{{ template_data.review_count|pluralize }}</span>
           <span><strong>{{ template_data.followers }}</strong> follower{{ template_data.followers|pluralize }}</span>
           <span><strong>{{ template_data.following }}</strong> following</span>
+          <a class="profile-stats-link" href="{% url 'profiles.stats' username=person.username %}">Stats →</a>
+          {% if year_in_review_open %}<a class="profile-stats-link" href="{% url 'profiles.year' username=person.username %}">{% now "Y" %} in review →</a>{% endif %}
         </p>
         <div class="profile-actions">
           {% if template_data.is_me %}

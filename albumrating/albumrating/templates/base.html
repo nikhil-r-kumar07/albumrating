@@ -509,6 +509,167 @@
 
     .flash-list { margin-top: 20px; }
 
+    /* ---------- stats ---------- */
+    .stat-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-tile, .wrapped-card {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .stat-label { font-size: 0.8rem; color: var(--muted); }
+    .stat-value { font-size: 1.6rem; font-weight: 600; line-height: 1.2; }
+
+    .stats-note { margin: 10px 0 0; }
+    .stat-tiles + .stats-note + .home-section, .wrapped-grid + .home-section { margin-top: 40px; }
+
+    .chart-sub { margin: -6px 0 14px; font-size: 0.9rem; color: var(--muted); }
+    .chart-sub strong { color: var(--text); }
+
+    .col-chart { margin: 0; }
+    .col-chart-green { --bar: var(--accent); }
+    .col-chart-gold { --bar: #f5c518; }
+
+    .col-plot {
+      display: grid;
+      gap: 2px;
+      height: 180px;
+      padding-top: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Each slot is the whole column's height, so the hover/focus target is bigger than the bar. */
+    .col-slot {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100%;
+      border-radius: 4px;
+      cursor: default;
+    }
+
+    .col-slot:hover, .col-slot:focus-visible { background: rgba(255, 255, 255, 0.04); outline: none; }
+    .col-slot:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+
+    .col-bar {
+      position: relative;
+      width: 100%;
+      max-width: 24px;
+      min-height: 0;
+      background: var(--bar);
+      border-radius: 4px 4px 0 0;
+    }
+
+    .col-peak {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      margin-bottom: 4px;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .col-tip {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      z-index: 5;
+      display: none;
+      flex-direction: column;
+      padding: 6px 10px;
+      transform: translateX(-50%);
+      background: #0b0e11;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .col-tip strong { color: var(--text); font-size: 0.85rem; }
+    .col-slot:hover .col-tip, .col-slot:focus-visible .col-tip { display: flex; }
+    .col-slot:first-child .col-tip { left: 0; transform: none; }
+    .col-slot:last-child .col-tip { left: auto; right: 0; transform: none; }
+
+    .col-axis {
+      display: grid;
+      gap: 2px;
+      margin-top: 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .col-axis span { overflow: hidden; text-overflow: clip; white-space: nowrap; }
+
+    .chart-table { margin-top: 10px; font-size: 0.85rem; }
+    .chart-table summary { color: var(--muted); cursor: pointer; }
+    .chart-table summary:hover { color: var(--text); }
+    .chart-table table { margin-top: 8px; border-collapse: collapse; }
+    .chart-table th, .chart-table td { padding: 4px 16px 4px 0; text-align: left; border-bottom: 1px solid var(--border); }
+    .chart-table td:last-child { font-variant-numeric: tabular-nums; }
+
+    .chart-row-simple { grid-template-columns: 2.5rem minmax(0, 1fr) auto; }
+
+    .profile-stats-link { color: var(--accent); font-weight: 600; }
+    .profile-stats-link:hover { text-decoration: underline; }
+
+    .review-sort { margin-bottom: 8px; }
+
+    /* ---------- year in review ---------- */
+    .year-banner {
+      display: block;
+      margin-top: 20px;
+      padding: 12px 16px;
+      background: linear-gradient(90deg, rgba(0, 196, 106, 0.18), rgba(245, 197, 24, 0.14));
+      border: 1px solid rgba(0, 196, 106, 0.45);
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .year-banner:hover { border-color: var(--accent); }
+
+    .wrapped-hero { padding: 56px 0 28px; }
+
+    .wrapped-hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      line-height: 1.1;
+    }
+
+    .wrapped-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .wrapped-big { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(0, 196, 106, 0.16), var(--surface) 60%); }
+
+    .wrapped-number { font-size: 2.6rem; font-weight: 700; line-height: 1.1; }
+    .wrapped-big .wrapped-number { font-size: 3.6rem; }
+    .wrapped-number small { font-size: 1rem; font-weight: 600; color: var(--muted); }
+
+    .wrapped-name { font-size: 1.3rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+    a.wrapped-name:hover { color: var(--accent); }
+    .wrapped-sub { font-size: 0.85rem; color: var(--muted); }
+
+    .wrapped-cover { display: block; width: 96px; margin: 6px 0 4px; }
+
     /* ---------- navbar extras ---------- */
     .nav-bell { position: relative; display: inline-flex; align-items: center; }
 
@@ -1380,6 +1541,7 @@
               <a href="{% url 'profiles.edit' %}">Edit Profile</a>
               <a href="{% url 'profiles.reviews' %}">Reviews</a>
               <a href="{% url 'profiles.diary' %}">Diary</a>
+              <a href="{% url 'profiles.stats' username=user.username %}">Stats</a>
               <a href="{% url 'profiles.lists' %}">Lists</a>
               <a href="{% url 'profiles.queue' %}">Queue</a>
               <a href="{% url 'profiles.people' %}">Find People</a>
@@ -1397,6 +1559,11 @@
   </header>
 
   <main class="container">
+    {% if year_in_review_open and user.is_authenticated %}
+      <a class="year-banner" href="{% url 'profiles.year' username=user.username %}">
+        <span aria-hidden="true">🎧</span> Your {% now "Y" %} in music is here. See your year in review →
+      </a>
+    {% endif %}
     {% if messages %}
       <div class="flash-list">
         {% for message in messages %}

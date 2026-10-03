@@ -16,6 +16,8 @@ from django.utils import timezone
 from albums.models import ArtistReview
 from .models import Profile, AlbumList, ListItem, QueueItem, Favorite, DiaryEntry, Follow, Notification
 from .notify import notify, unnotify
+from django.conf import settings
+from . import stats as stats_module
 from .forms import UserDetailsForm
 
 # ---------- helpers for ordered items (list items and queue items) ----------
@@ -348,3 +350,29 @@ def notifications(request):
     template_data['title'] = 'Notifications'
     template_data['notifications'] = items
     return render(request, 'profiles/notifications.html', {'template_data': template_data})
+
+# ---------- stats and year in review ----------
+
+def stats(request, username):
+    person = get_object_or_404(User, username=username)
+    template_data = {}
+    template_data['title'] = person.username + "'s stats"
+    template_data['person'] = person
+    template_data['is_me'] = request.user == person
+    template_data['stats'] = stats_module.user_stats(person)
+    return render(request, 'profiles/stats.html', {'template_data': template_data})
+
+def year_in_review(request, username):
+    person = get_object_or_404(User, username=username)
+    today = timezone.localdate()
+    # Only open December 25-31. On your laptop (debug mode), add ?preview=1 to see it any time.
+    is_open = stats_module.year_in_review_open(today) or (settings.DEBUG and request.GET.get('preview') == '1')
+    template_data = {}
+    template_data['title'] = str(today.year) + ' in review'
+    template_data['person'] = person
+    template_data['is_me'] = request.user == person
+    template_data['year'] = today.year
+    template_data['is_open'] = is_open
+    if is_open:
+        template_data['wrapped'] = stats_module.year_stats(person, today.year)
+    return render(request, 'profiles/year.html', {'template_data': template_data})

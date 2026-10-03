@@ -23,4 +23,6 @@ urlpatterns = [
     path('notifications/', views.notifications, name = 'profiles.notifications'),
     path('u/<str:username>/', views.public, name = 'profiles.public'),
     path('u/<str:username>/follow/', views.follow_toggle, name = 'profiles.follow'),
+    path('u/<str:username>/stats/', views.stats, name = 'profiles.stats'),
+    path('u/<str:username>/year/', views.year_in_review, name = 'profiles.year'),
 ]

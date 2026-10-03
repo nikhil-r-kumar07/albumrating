@@ -30,6 +30,12 @@ def ensure_tracks(album):
             album.tracks_fetched = True
             album.save(update_fields=['tracks_fetched'])
 
+def sorted_reviews(request, reviews):
+    # ?sort=liked shows the most-liked reviews first; otherwise newest first.
+    if request.GET.get('sort') == 'liked':
+        return reviews.order_by('-like_count', '-date'), 'liked'
+    return reviews.order_by('-date'), 'newest'
+
 def with_comments(reviews):
     # Attach each review's visible comments as review.visible_comments, and its like count as review.like_count.
     visible = Comment.objects.filter(hidden=False).select_related('user', 'user__profile').order_by('date')
@@ -73,8 +79,9 @@ def open_album(request, mbid):
 def show(request, id):
     album = get_object_or_404(Album, id=id)
     all_reviews = Review.objects.filter(album=album)
-    reviews = with_comments(all_reviews)
+    reviews, sort = sorted_reviews(request, with_comments(all_reviews))
     template_data = {}
+    template_data['sort'] = sort
     template_data['my_reports'] = my_reports(request)
     template_data['my_likes'] = my_likes(request, 'review')
     template_data['title'] = album.name
@@ -146,7 +153,7 @@ def artist(request, id):
     template_data['artist'] = artist
     template_data['albums'] = albums
     all_reviews = ArtistReview.objects.filter(artist=artist)
-    reviews = with_comments(all_reviews.order_by('-date'))
+    reviews, template_data['sort'] = sorted_reviews(request, with_comments(all_reviews))
     template_data['reviews'] = reviews
     template_data['my_reports'] = my_reports(request)
     template_data['my_likes'] = my_likes(request, 'artist_review')
