@@ -3,15 +3,11 @@
 {% block content %}
   {% with album=template_data.album %}
     <section class="album-detail">
-      {% if album.image %}
-        <img class="album-cover" src="{{ album.image.url }}" alt="{{ album.name }} cover">
-      {% else %}
-        <div class="album-cover">{{ album.name|slice:":1" }}</div>
-      {% endif %}
+      {% include 'albums/cover.html' %}
 
       <div>
         <h1>{{ album.name }}</h1>
-        <p class="album-meta">{{ album.artist }} · {{ album.year }}</p>
+        <p class="album-meta">{{ album.artist }}{% if album.year %} · {{ album.year }}{% endif %}</p>
         {% if template_data.average is not None %}
           <p class="album-rating">
             <span class="star-on" aria-hidden="true">★</span>

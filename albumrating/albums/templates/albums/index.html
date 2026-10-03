@@ -17,14 +17,10 @@
         {% for album in template_data.albums %}
           <article class="album-card">
             <a href="{% url 'albums.show' id=album.id %}">
-              {% if album.image %}
-                <img class="album-cover" src="{{ album.image.url }}" alt="{{ album.name }} cover">
-              {% else %}
-                <div class="album-cover">{{ album.name|slice:":1" }}</div>
-              {% endif %}
+              {% include 'albums/cover.html' %}
               <h3>{{ album.name }}</h3>
             </a>
-            <p class="album-meta">{{ album.artist }} · {{ album.year }}</p>
+            <p class="album-meta">{{ album.artist }}{% if album.year %} · {{ album.year }}{% endif %}</p>
           </article>
         {% endfor %}
       </div>

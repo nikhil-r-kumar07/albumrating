@@ -1,0 +1,9 @@
+{# Album cover: uploaded image first, then the MusicBrainz cover URL, with the album's initial underneath if neither loads. #}
+<div class="album-cover">
+  <span aria-hidden="true">{{ album.name|slice:":1" }}</span>
+  {% if album.image %}
+    <img src="{{ album.image.url }}" alt="{{ album.name }} cover" onerror="this.remove()">
+  {% elif album.cover_url %}
+    <img src="{{ album.cover_url }}" alt="{{ album.name }} cover" loading="lazy" onerror="this.remove()">
+  {% endif %}
+</div>
