@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from .models import Album, Review, Artist, ArtistReview
-from . import musicbrainz
-from django.db.models import Avg, Count
+from django.urls import reverse
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+from .models import Album, Review, Artist, ArtistReview, Comment, CommentReport, ReviewLike
+from . import musicbrainz, moderation
+from django.db.models import Avg, Count, Prefetch
 
 def rating_from(request):
     # The star picker sends '0'-'5', or '' when left unrated.
@@ -11,6 +14,23 @@ def rating_from(request):
     if rating in ['0', '1', '2', '3', '4', '5']:
         return int(rating)
     return None
+
+def with_comments(reviews):
+    # Attach each review's visible comments as review.visible_comments, and its like count as review.like_count.
+    visible = Comment.objects.filter(hidden=False).select_related('user').order_by('date')
+    return reviews.select_related('user').annotate(like_count=Count('likes', distinct=True)).prefetch_related(
+        Prefetch('comments', queryset=visible, to_attr='visible_comments'))
+
+def my_likes(request, field):
+    # IDs of the reviews the current user has liked; field is 'review' or 'artist_review'.
+    if not request.user.is_authenticated:
+        return set()
+    return set(ReviewLike.objects.filter(user=request.user, **{field + '__isnull': False}).values_list(field + '_id', flat=True))
+
+def my_reports(request):
+    if not request.user.is_authenticated:
+        return set()
+    return set(CommentReport.objects.filter(user=request.user).values_list('comment_id', flat=True))
 
 def index(request):
     search_term = request.GET.get('search')
@@ -37,12 +57,15 @@ def open_album(request, mbid):
     return redirect('albums.show', id=album.id)
 def show(request, id):
     album = get_object_or_404(Album, id=id)
-    reviews = Review.objects.filter(album=album)
+    all_reviews = Review.objects.filter(album=album)
+    reviews = with_comments(all_reviews)
     template_data = {}
+    template_data['my_reports'] = my_reports(request)
+    template_data['my_likes'] = my_likes(request, 'review')
     template_data['title'] = album.name
     template_data['album'] = album
     template_data['reviews'] = reviews
-    stats = reviews.aggregate(average = Avg('rating'), count = Count('rating'))
+    stats = all_reviews.aggregate(average = Avg('rating'), count = Count('rating'))
     template_data['average'] = stats['average']
     template_data['rating_count'] = stats['count']
     if request.user.is_authenticated:
@@ -88,9 +111,12 @@ def artist(request, id):
     template_data['title'] = artist.name
     template_data['artist'] = artist
     template_data['albums'] = albums
-    reviews = ArtistReview.objects.filter(artist=artist).order_by('-date')
+    all_reviews = ArtistReview.objects.filter(artist=artist)
+    reviews = with_comments(all_reviews.order_by('-date'))
     template_data['reviews'] = reviews
-    stats = reviews.aggregate(average = Avg('rating'), count = Count('rating'))
+    template_data['my_reports'] = my_reports(request)
+    template_data['my_likes'] = my_likes(request, 'artist_review')
+    stats = all_reviews.aggregate(average = Avg('rating'), count = Count('rating'))
     template_data['average'] = stats['average']
     template_data['rating_count'] = stats['count']
     if request.user.is_authenticated:
@@ -126,3 +152,74 @@ def delete_artist_review(request, id, review_id):
         review = get_object_or_404(ArtistReview, id=review_id, user=request.user)
         review.delete()
     return redirect('albums.artist', id=id)
+
+def save_comment(request, **parent):
+    text = request.POST.get('text', '').strip()[:500]
+    if not text:
+        return
+    if moderation.is_blocked(text):
+        messages.error(request, "Your comment wasn't posted because it contains language that isn't allowed here.")
+        return
+    Comment.objects.create(user=request.user, text=text, **parent)
+
+def comment_page(comment):
+    # Where to send someone after they act on a comment: the review it belongs to.
+    if comment.review_id:
+        return reverse('albums.show', args=[comment.review.album_id]) + '#review-' + str(comment.review_id)
+    return reverse('albums.artist', args=[comment.artist_review.artist_id]) + '#artist-review-' + str(comment.artist_review_id)
+
+@login_required
+@require_POST
+def add_comment(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    save_comment(request, review=review)
+    return redirect(reverse('albums.show', args=[review.album_id]) + '#review-' + str(review.id))
+@login_required
+@require_POST
+def add_artist_comment(request, review_id):
+    review = get_object_or_404(ArtistReview, id=review_id)
+    save_comment(request, artist_review=review)
+    return redirect(reverse('albums.artist', args=[review.artist_id]) + '#artist-review-' + str(review.id))
+@login_required
+@require_POST
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    page = comment_page(comment)
+    # The commenter, the person whose review it's on, and admins can remove a comment.
+    if request.user in (comment.user, comment.parent().user) or request.user.is_staff:
+        comment.delete()
+    return redirect(page)
+@login_required
+@require_POST
+def report_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    if request.user != comment.user:
+        CommentReport.objects.get_or_create(comment=comment, user=request.user)
+        if CommentReport.objects.filter(comment=comment).count() >= moderation.HIDE_AFTER_REPORTS:
+            comment.hidden = True
+            comment.save()
+        messages.success(request, 'Thanks for reporting that comment. It will be reviewed.')
+    return redirect(comment_page(comment))
+@login_required
+@require_POST
+def like_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    toggle_like(request.user, review=review)
+    return redirect(reverse('albums.show', args=[review.album_id]) + '#review-' + str(review.id))
+@login_required
+@require_POST
+def like_artist_review(request, review_id):
+    review = get_object_or_404(ArtistReview, id=review_id)
+    toggle_like(request.user, artist_review=review)
+    return redirect(reverse('albums.artist', args=[review.artist_id]) + '#artist-review-' + str(review.id))
+
+def toggle_like(user, **target):
+    # Like if not liked yet, unlike if already liked. People can't like their own reviews.
+    review = target.get('review') or target.get('artist_review')
+    if review.user == user:
+        return
+    like = ReviewLike.objects.filter(user=user, **target).first()
+    if like:
+        like.delete()
+    else:
+        ReviewLike.objects.create(user=user, **target)

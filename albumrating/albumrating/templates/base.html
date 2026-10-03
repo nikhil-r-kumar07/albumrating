@@ -507,6 +507,114 @@
     .status-done { background: rgba(0, 196, 106, 0.18); color: var(--accent); }
     .status-declined { background: rgba(139, 152, 165, 0.18); color: var(--muted); }
 
+    .flash-list { margin-top: 20px; }
+
+    .review-actions { margin-top: 8px; }
+
+    .review-actions:empty { display: none; }
+
+    .like-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .like-button:hover { border-color: #ff6b8b; color: var(--text); }
+
+    .like-button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .like-button.is-liked {
+      background: rgba(255, 107, 139, 0.14);
+      border-color: rgba(255, 107, 139, 0.5);
+      color: #ff8fa6;
+    }
+
+    .like-count {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .comments {
+      margin: 10px 0 0 14px;
+      padding-left: 14px;
+      border-left: 2px solid var(--border);
+    }
+
+    .comment { padding: 6px 0; }
+
+    .comment-meta {
+      margin: 0 0 2px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .comment-meta strong { color: var(--text); font-weight: 600; }
+
+    .comment-text {
+      margin: 0;
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
+    }
+
+    .comment-reported { font-style: italic; }
+
+    .link-button.link-muted { color: var(--muted); }
+
+    .comment-toggle summary {
+      display: inline-block;
+      padding: 4px 0;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .comment-toggle summary::-webkit-details-marker { display: none; }
+
+    .comment-toggle summary:hover { text-decoration: underline; }
+
+    .comment-toggle summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .comment-form {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 6px 0 4px;
+    }
+
+    .comment-form textarea {
+      width: 100%;
+      padding: 8px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+    }
+
+    .comment-form textarea:focus { outline: none; border-color: var(--accent); }
+
+    .comment-form .btn { padding: 6px 14px; font-size: 0.85rem; }
+
     .results-note {
       margin: 24px 0 0;
       font-size: 0.85rem;
@@ -848,6 +956,13 @@
   </header>
 
   <main class="container">
+    {% if messages %}
+      <div class="flash-list">
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}" role="status">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 

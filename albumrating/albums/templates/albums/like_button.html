@@ -1,0 +1,19 @@
+{# Like button for one review. Needs: review (with like_count) and like_url. #}
+<div class="review-actions">
+  {% if user.is_authenticated and user != review.user %}
+    <form class="inline-form" method="POST" action="{{ like_url }}">
+      {% csrf_token %}
+      {% if review.id in template_data.my_likes %}
+        <button class="like-button is-liked" type="submit" aria-pressed="true" title="Unlike">
+          <span aria-hidden="true">♥</span> {{ review.like_count }}<span class="sr-only"> like{{ review.like_count|pluralize }}, unlike this review</span>
+        </button>
+      {% else %}
+        <button class="like-button" type="submit" aria-pressed="false" title="Like">
+          <span aria-hidden="true">♥</span> {{ review.like_count }}<span class="sr-only"> like{{ review.like_count|pluralize }}, like this review</span>
+        </button>
+      {% endif %}
+    </form>
+  {% elif review.like_count %}
+    <span class="like-count"><span aria-hidden="true">♥</span> {{ review.like_count }} like{{ review.like_count|pluralize }}</span>
+  {% endif %}
+</div>

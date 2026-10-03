@@ -25,7 +25,7 @@
       <h2 class="section-title">Reviews</h2>
 
       {% for review in template_data.reviews %}
-        <article class="review">
+        <article class="review" id="review-{{ review.id }}">
           <div class="review-meta">
             Review by {{ review.user.username }} · {{ review.date|date:"M j, Y" }}
             {% if user == review.user %}
@@ -42,6 +42,10 @@
             </div>
           {% endif %}
           <p class="review-comment">{{ review.comment }}</p>
+          {% url 'albums.like_review' review_id=review.id as like_url %}
+          {% include 'albums/like_button.html' %}
+          {% url 'albums.add_comment' review_id=review.id as add_url %}
+          {% include 'albums/comments.html' %}
         </article>
       {% empty %}
         <div class="empty">No reviews yet.</div>

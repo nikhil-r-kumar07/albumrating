@@ -1,0 +1,38 @@
+{# Comments under one review. Needs: review (with visible_comments) and add_url. #}
+<div class="comments">
+  {% for comment in review.visible_comments %}
+    <div class="comment">
+      <p class="comment-meta">
+        <strong>{{ comment.user.username }}</strong> · {{ comment.date|date:"M j, Y" }}
+        {% if user == comment.user or user == review.user or user.is_staff %}
+          · <form class="inline-form" method="POST" action="{% url 'albums.delete_comment' comment_id=comment.id %}" onsubmit="return confirm('Delete this comment?');">
+              {% csrf_token %}
+              <button class="link-button" type="submit">Delete</button>
+            </form>
+        {% endif %}
+        {% if user.is_authenticated and user != comment.user %}
+          {% if comment.id in template_data.my_reports %}
+            · <span class="comment-reported">Reported</span>
+          {% else %}
+            · <form class="inline-form" method="POST" action="{% url 'albums.report_comment' comment_id=comment.id %}" onsubmit="return confirm('Report this comment as hateful or abusive?');">
+                {% csrf_token %}
+                <button class="link-button link-muted" type="submit">Report</button>
+              </form>
+          {% endif %}
+        {% endif %}
+      </p>
+      <p class="comment-text">{{ comment.text }}</p>
+    </div>
+  {% endfor %}
+
+  {% if user.is_authenticated %}
+    <details class="comment-toggle">
+      <summary>{% if review.visible_comments %}Add a comment{% else %}Comment{% endif %}</summary>
+      <form class="comment-form" method="POST" action="{{ add_url }}">
+        {% csrf_token %}
+        <textarea name="text" rows="2" maxlength="500" required aria-label="Comment on {{ review.user.username }}'s review"></textarea>
+        <button class="btn" type="submit">Post comment</button>
+      </form>
+    </details>
+  {% endif %}
+</div>

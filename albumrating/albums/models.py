@@ -43,3 +43,37 @@ class ArtistReview(models.Model):
         constraints = [models.UniqueConstraint(fields=['artist', 'user'], name='one_review_per_user_per_artist')]
     def __str__(self):
         return str(self.id) + ' - ' + self.artist.name
+
+class Comment(models.Model):
+    # A comment belongs to either an album review or an artist review.
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, null=True, blank=True, related_name='comments')
+    artist_review = models.ForeignKey(ArtistReview, on_delete=models.CASCADE, null=True, blank=True, related_name='comments')
+    text = models.CharField(max_length=500)
+    date = models.DateTimeField(auto_now_add=True)
+    hidden = models.BooleanField(default=False)
+    def parent(self):
+        return self.review or self.artist_review
+    def __str__(self):
+        return str(self.id) + ' - ' + self.text[:40]
+
+class CommentReport(models.Model):
+    id = models.AutoField(primary_key=True)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['comment', 'user'], name='one_report_per_user_per_comment')]
+class ReviewLike(models.Model):
+    # A like on either an album review or an artist review. One like per person per review.
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, null=True, blank=True, related_name='likes')
+    artist_review = models.ForeignKey(ArtistReview, on_delete=models.CASCADE, null=True, blank=True, related_name='likes')
+    date = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'review'], name='one_like_per_user_per_review'),
+            models.UniqueConstraint(fields=['user', 'artist_review'], name='one_like_per_user_per_artist_review'),
+        ]
