@@ -673,6 +673,20 @@
     /* ---------- navbar extras ---------- */
     .nav-bell { position: relative; display: inline-flex; align-items: center; }
 
+    /* Outline bell drawn in the link colour, so it greys/brightens with the other nav links. */
+    .nav-bell-icon {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .nav-bell:hover { color: var(--text); }
+    .nav-bell:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+
     .nav-badge {
       position: absolute;
       top: -6px;
@@ -1532,7 +1546,7 @@
         {% if user.is_authenticated %}
           <a href="{% url 'profiles.feed' %}">Feed</a>
           <a class="nav-bell" href="{% url 'profiles.notifications' %}" aria-label="Notifications{% if unread_notifications %}, {{ unread_notifications }} unread{% endif %}">
-            <span aria-hidden="true">🔔</span>{% if unread_notifications %}<span class="nav-badge" aria-hidden="true">{{ unread_notifications }}</span>{% endif %}
+            <svg class="nav-bell-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>{% if unread_notifications %}<span class="nav-badge" aria-hidden="true">{{ unread_notifications }}</span>{% endif %}
           </a>
           <div class="dropdown">
             <a class="nav-user" href="{% url 'profiles.public' username=user.username %}">{% include 'profiles/avatar.html' with person=user %}{{ user.username }}</a>
