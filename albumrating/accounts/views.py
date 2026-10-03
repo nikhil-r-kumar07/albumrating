@@ -4,6 +4,9 @@ from django.contrib.auth import login as auth_login, authenticate, logout as aut
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib import messages
 
 @login_required
 def delete_account(request):
@@ -53,3 +56,18 @@ def login(request):
         else:
             auth_login(request, user)
             return redirect('home.index')
+@login_required
+def change_password(request):
+    template_data = {}
+    template_data['title'] = 'Change password'
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST, error_class=CustomErrorList)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)  # stay logged in after the change
+            messages.success(request, 'Your password was changed.')
+            return redirect('profiles.edit')
+    else:
+        form = PasswordChangeForm(request.user)
+    template_data['form'] = form
+    return render(request, 'accounts/change_password.html', {'template_data': template_data})

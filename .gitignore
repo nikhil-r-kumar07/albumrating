@@ -1,0 +1,15 @@
+# Each copy of the site (your laptop, PythonAnywhere) keeps its own data. Never commit it.
+*.sqlite3
+albumrating/media/
+albumrating/staticfiles/
+
+# Python and macOS clutter
+__pycache__/
+*.pyc
+.DS_Store
+
+# Editor and environment files
+.vscode/
+.env
+venv/
+.venv/

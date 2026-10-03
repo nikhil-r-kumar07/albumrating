@@ -16,16 +16,23 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# The live site sets DJANGO_PRODUCTION=1 and its own DJANGO_SECRET_KEY in its WSGI file on PythonAnywhere.
+# On your laptop neither is set, so you get debug mode and a throwaway development key.
+PRODUCTION = os.environ.get('DJANGO_PRODUCTION') == '1'
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-h)*1(_yozr3o7lx4i6u7*i&jofenzdegg=)hli4rhhx5v*^)dz'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-local-development-only')
+if PRODUCTION and SECRET_KEY.startswith('django-insecure'):
+    raise RuntimeError('Set DJANGO_SECRET_KEY in the PythonAnywhere WSGI file.')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = not PRODUCTION
 
 ALLOWED_HOSTS = ['iymmoviereviews.pythonanywhere.com', 'localhost', '127.0.0.1']
+
+if PRODUCTION:
+    # Only send login and form cookies over HTTPS on the live site.
+    # HTTP -> HTTPS redirects are handled by the "Force HTTPS" switch on PythonAnywhere's Web tab.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 
 # Application definition

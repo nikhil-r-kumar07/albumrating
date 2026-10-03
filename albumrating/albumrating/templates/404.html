@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero">
+    <h1>Page not found</h1>
+    <p>That page doesn't exist, or it was removed.</p>
+    <p class="error-links">
+      <a class="btn" href="{% url 'home.index' %}">Go home</a>
+      <a class="btn-outline" href="{% url 'albums.index' %}">Search albums</a>
+    </p>
+  </section>
+{% endblock %}
