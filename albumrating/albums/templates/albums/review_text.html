@@ -1,0 +1,12 @@
+{# A review's text, keeping line breaks. Long reviews show a preview with "Read more". Needs: review. #}
+{% if review.comment|length > 600 %}
+  <div class="review-long">
+    <p class="review-comment review-preview">{{ review.comment|truncatechars:600|linebreaksbr }}</p>
+    <details>
+      <summary><span class="read-more">Read more</span><span class="read-less">Show less</span></summary>
+      <p class="review-comment">{{ review.comment|linebreaksbr }}</p>
+    </details>
+  </div>
+{% else %}
+  <p class="review-comment">{{ review.comment|linebreaksbr }}</p>
+{% endif %}

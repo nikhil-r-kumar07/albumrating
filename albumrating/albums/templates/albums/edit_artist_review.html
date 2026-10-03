@@ -10,7 +10,8 @@
         {% include 'albums/star_picker.html' with current=review.rating %}
         <div class="form-field">
           <label for="comment">Your review of {{ review.artist.name }}</label>
-          <textarea id="comment" name="comment" rows="4" maxlength="255" required>{{ review.comment }}</textarea>
+          <textarea id="comment" name="comment" rows="12" maxlength="5000" required aria-describedby="comment-limit">{{ review.comment }}</textarea>
+          <div class="field-help" id="comment-limit">Up to 5,000 characters.</div>
         </div>
         <button type="submit">Save review</button>
       </form>

@@ -33,7 +33,7 @@ class Track(models.Model):
 
 class Review(models.Model):
     id = models.AutoField(primary_key=True)
-    comment = models.CharField(max_length=255)
+    comment = models.TextField(max_length=5000)
     date = models.DateTimeField(auto_now_add=True)
     album = models.ForeignKey(Album, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -45,7 +45,7 @@ class Review(models.Model):
 
 class ArtistReview(models.Model):
     id = models.AutoField(primary_key=True)
-    comment = models.CharField(max_length=255)
+    comment = models.TextField(max_length=5000)
     date = models.DateTimeField(auto_now_add=True)
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

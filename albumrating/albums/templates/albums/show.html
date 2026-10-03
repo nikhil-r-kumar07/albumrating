@@ -142,7 +142,7 @@
           {% if review.rating is not None %}
             {% include 'albums/stars.html' with rating=review.rating %}
           {% endif %}
-          <p class="review-comment">{{ review.comment }}</p>
+          {% include 'albums/review_text.html' %}
           {% url 'albums.like_review' review_id=review.id as like_url %}
           {% include 'albums/like_button.html' %}
           {% url 'albums.add_comment' review_id=review.id as add_url %}
@@ -166,7 +166,8 @@
           {% include 'albums/star_picker.html' %}
           <div class="form-field">
             <label for="comment">Write a review</label>
-            <textarea id="comment" name="comment" rows="3" maxlength="255" required></textarea>
+            <textarea id="comment" name="comment" rows="6" maxlength="5000" required aria-describedby="comment-limit"></textarea>
+            <div class="field-help" id="comment-limit">Up to 5,000 characters.</div>
           </div>
           <button class="btn" type="submit">Add review</button>
         </form>

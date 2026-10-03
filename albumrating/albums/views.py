@@ -12,6 +12,8 @@ from profiles.models import AlbumList, QueueItem, DiaryEntry, Favorite
 from profiles.notify import notify, unnotify
 from django.db.models import Avg, Count, Prefetch
 
+MAX_REVIEW_LENGTH = 5000
+
 RATING_CHOICES = ['0', '0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5']
 
 def rating_from(request):
@@ -113,7 +115,7 @@ def create_review(request, id):
         review = Review.objects.filter(album=album, user=request.user).first()
         if review is None:
             review = Review(album=album, user=request.user)
-        review.comment = request.POST['comment']
+        review.comment = request.POST['comment'].strip()[:MAX_REVIEW_LENGTH]
         review.rating = rating_from(request)
         review.save()
         # Reviewing an album takes it off your queue.
@@ -134,7 +136,7 @@ def edit_review(request, id, review_id):
         template_data['review'] = review
         return render(request, 'albums/edit_review.html', {'template_data': template_data})
     elif request.method == 'POST' and request.POST['comment'] != '':
-        review.comment = request.POST['comment']
+        review.comment = request.POST['comment'].strip()[:MAX_REVIEW_LENGTH]
         review.rating = rating_from(request)
         review.save()
         return redirect('albums.show', id=id)
@@ -170,7 +172,7 @@ def create_artist_review(request, id):
         review = ArtistReview.objects.filter(artist=artist, user=request.user).first()
         if review is None:
             review = ArtistReview(artist=artist, user=request.user)
-        review.comment = request.POST['comment']
+        review.comment = request.POST['comment'].strip()[:MAX_REVIEW_LENGTH]
         review.rating = rating_from(request)
         review.save()
     return redirect('albums.artist', id=id)
@@ -183,7 +185,7 @@ def edit_artist_review(request, id, review_id):
         template_data['review'] = review
         return render(request, 'albums/edit_artist_review.html', {'template_data': template_data})
     elif request.method == 'POST' and request.POST.get('comment', '') != '':
-        review.comment = request.POST['comment']
+        review.comment = request.POST['comment'].strip()[:MAX_REVIEW_LENGTH]
         review.rating = rating_from(request)
         review.save()
     return redirect('albums.artist', id=id)
