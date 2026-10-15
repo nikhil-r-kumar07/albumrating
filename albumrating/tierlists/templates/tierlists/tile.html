@@ -1,0 +1,14 @@
+{# One album on the tier board. Needs: item. Optional: editable. #}
+{% if editable %}
+  <div class="tier-tile" draggable="true" tabindex="0" role="button" aria-pressed="false"
+       data-item="{{ item.id }}" data-name="{{ item.album.name }} by {{ item.album.artist }}"
+       title="{{ item.album.name }} · {{ item.album.artist }}">
+    {% include 'albums/cover.html' with album=item.album %}
+    <span class="sr-only">{{ item.album.name }} by {{ item.album.artist }}</span>
+  </div>
+{% else %}
+  <a class="tier-tile" href="{% url 'albums.show' id=item.album.id %}" title="{{ item.album.name }} · {{ item.album.artist }}">
+    {% include 'albums/cover.html' with album=item.album %}
+    <span class="sr-only">{{ item.album.name }} by {{ item.album.artist }}</span>
+  </a>
+{% endif %}

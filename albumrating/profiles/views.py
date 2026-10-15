@@ -14,6 +14,8 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.utils import timezone
 from albums.models import ArtistReview
+from tierlists.models import TierList
+from concerts.models import Concert
 from .models import Profile, AlbumList, ListItem, QueueItem, Favorite, DiaryEntry, Follow, Notification
 from .notify import notify, unnotify
 from django.conf import settings
@@ -284,6 +286,9 @@ def public(request, username):
     template_data['reviews'] = person.review_set.select_related('album', 'album__artist').order_by('-date')[:8]
     template_data['diary'] = person.diary.select_related('album', 'album__artist')[:10]
     template_data['lists'] = person.album_lists.prefetch_related('items__album').order_by('-updated')
+    template_data['tier_lists'] = person.tier_lists.prefetch_related('items__album').order_by('-updated')
+    template_data['concerts'] = person.concerts.all()[:5]
+    template_data['concert_count'] = person.concerts.count()
     return render(request, 'profiles/public.html', {'template_data': template_data})
 
 @login_required
@@ -316,7 +321,7 @@ def people(request):
 
 @login_required
 def feed(request):
-    # Recent activity from people you follow: reviews, artist reviews, listens and new lists.
+    # Recent activity from people you follow: reviews, artist reviews, listens, new lists and tier lists, concerts.
     ids = list(request.user.following_set.values_list('following_id', flat=True))
     events = []
     for review in (Review.objects.filter(user__in=ids).select_related('user', 'user__profile', 'album', 'album__artist')
@@ -331,6 +336,12 @@ def feed(request):
     for album_list in (AlbumList.objects.filter(user__in=ids).select_related('user', 'user__profile')
                        .prefetch_related('items__album').order_by('-created')[:30]):
         events.append({'kind': 'list', 'when': album_list.created, 'user': album_list.user, 'item': album_list})
+    for tier_list in (TierList.objects.filter(user__in=ids).select_related('user', 'user__profile')
+                      .order_by('-created')[:30]):
+        events.append({'kind': 'tier_list', 'when': tier_list.created, 'user': tier_list.user, 'item': tier_list})
+    for concert in (Concert.objects.filter(user__in=ids).select_related('user', 'user__profile')
+                    .order_by('-created')[:30]):
+        events.append({'kind': 'concert', 'when': concert.created, 'user': concert.user, 'item': concert})
     events.sort(key=lambda event: event['when'], reverse=True)
     template_data = {}
     template_data['title'] = 'Feed'

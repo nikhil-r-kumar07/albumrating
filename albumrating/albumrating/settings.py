@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'charts',
     'feedback',
     'profiles',
+    'tierlists',
+    'concerts',
 ]
 
 MIDDLEWARE = [

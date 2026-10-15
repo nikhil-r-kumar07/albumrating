@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load ratings %}
+
+{% block content %}
+  {% with person=template_data.person summary=template_data.summary %}
+    <section class="hero hero-compact">
+      <h1>{% if template_data.is_me %}My concerts{% else %}{{ person.username }}'s concerts{% endif %}</h1>
+      {% if summary.count %}
+        <p>
+          {{ summary.count }} show{{ summary.count|pluralize }} · {{ summary.artists }} artist{{ summary.artists|pluralize }}
+          {% if summary.average is not None %}· <span class="star-on" aria-hidden="true">★</span> {{ summary.average|floatformat:1 }} average<span class="sr-only"> out of 5</span>{% endif %}
+        </p>
+      {% else %}
+        <p>Shows {% if template_data.is_me %}you've{% else %}they've{% endif %} been to or watched, rated and reviewed.</p>
+      {% endif %}
+      {% if template_data.is_me %}
+        <div class="error-links"><a class="btn" href="{% url 'concerts.create' %}">+ Log a concert</a></div>
+      {% endif %}
+    </section>
+
+    <section>
+      {% if template_data.concerts %}
+        <ul class="concert-list">
+          {% for concert in template_data.concerts %}
+            {% include 'concerts/row.html' %}
+          {% endfor %}
+        </ul>
+      {% elif template_data.is_me %}
+        <div class="empty">No concerts yet. <a href="{% url 'concerts.create' %}">Log the last show you saw</a>.</div>
+      {% else %}
+        <div class="empty">{{ person.username }} hasn't logged any concerts yet.</div>
+      {% endif %}
+    </section>
+  {% endwith %}
+{% endblock %}

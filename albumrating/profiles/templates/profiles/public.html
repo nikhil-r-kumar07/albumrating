@@ -113,5 +113,32 @@
         <div class="empty">No lists yet.</div>
       {% endif %}
     </section>
+
+    <section class="home-section">
+      <h2 class="section-title">Tier lists</h2>
+      {% if template_data.tier_lists %}
+        {% include 'tierlists/grid.html' with tier_lists=template_data.tier_lists %}
+      {% elif template_data.is_me %}
+        <div class="empty">No tier lists yet. <a href="{% url 'tierlists.index' %}">Make one</a>.</div>
+      {% else %}
+        <div class="empty">No tier lists yet.</div>
+      {% endif %}
+    </section>
+
+    <section class="home-section">
+      <h2 class="section-title">Concerts</h2>
+      {% if template_data.concerts %}
+        <ul class="concert-list">
+          {% for concert in template_data.concerts %}
+            {% include 'concerts/row.html' %}
+          {% endfor %}
+        </ul>
+        <p class="review-prompt"><a href="{% url 'concerts.user' username=person.username %}">All {{ template_data.concert_count }} concert{{ template_data.concert_count|pluralize }} →</a></p>
+      {% elif template_data.is_me %}
+        <div class="empty">No concerts yet. <a href="{% url 'concerts.create' %}">Log a show you've seen</a>.</div>
+      {% else %}
+        <div class="empty">No concerts yet.</div>
+      {% endif %}
+    </section>
   {% endwith %}
 {% endblock %}

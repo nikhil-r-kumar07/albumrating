@@ -25,9 +25,16 @@
                     listened to <a href="{% url 'albums.show' id=item.album.id %}">{{ item.album.name }}</a> by {{ item.album.artist }}
                   {% elif event.kind == 'list' %}
                     made a list: <a href="{% url 'profiles.list' id=item.id %}">{{ item.title }}</a>
+                  {% elif event.kind == 'tier_list' %}
+                    made a tier list: <a href="{% url 'tierlists.show' id=item.id %}">{{ item.title }}</a>
+                  {% elif event.kind == 'concert' %}
+                    {% if item.how == 'watched' %}watched{% else %}saw{% endif %} <a href="{% url 'concerts.show' id=item.id %}">{{ item.artist_name }}</a> {% if item.how == 'watched' %}perform{% else %}live{% endif %}{% if item.venue %} at {{ item.venue }}{% endif %}
                   {% endif %}
                 </p>
-                {% if event.kind == 'review' or event.kind == 'artist_review' %}
+                {% if event.kind == 'concert' %}
+                  {% if item.rating is not None %}{% include 'albums/stars.html' with rating=item.rating %}{% endif %}
+                  {% if item.review %}<p class="feed-quote">{{ item.review|truncatechars:200 }}</p>{% endif %}
+                {% elif event.kind == 'review' or event.kind == 'artist_review' %}
                   {% if item.rating is not None %}{% include 'albums/stars.html' with rating=item.rating %}{% endif %}
                   <p class="feed-quote">{{ item.comment|truncatechars:200 }}</p>
                 {% elif event.kind == 'listen' and item.note %}

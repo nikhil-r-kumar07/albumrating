@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>My tier lists</h1>
+    <p>Sort albums from S tier down to D. Drag them around until it feels right, then share it.</p>
+  </section>
+
+  <section class="auth-card feedback-card list-create">
+    <h2 class="list-create-title">New tier list</h2>
+    {% if template_data.error %}
+      <div class="alert alert-danger" role="alert">{{ template_data.error }}</div>
+    {% endif %}
+    <form method="POST" action="{% url 'tierlists.index' %}">
+      {% csrf_token %}
+      <div class="form-field">
+        <label for="title">Title</label>
+        <input id="title" type="text" name="title" maxlength="100" required placeholder="e.g. Kanye albums ranked">
+      </div>
+      <div class="form-field">
+        <label for="description">Description <span class="star-picker-optional">(optional)</span></label>
+        <textarea id="description" name="description" rows="2" maxlength="500"></textarea>
+      </div>
+      <button type="submit">Create tier list</button>
+    </form>
+  </section>
+
+  <section class="home-section">
+    <h2 class="section-title">Your tier lists</h2>
+    {% if template_data.tier_lists %}
+      {% include 'tierlists/grid.html' with tier_lists=template_data.tier_lists %}
+    {% else %}
+      <div class="empty">No tier lists yet. Create one above, then fill it with albums you've reviewed or add them from any album page.</div>
+    {% endif %}
+  </section>
+{% endblock %}

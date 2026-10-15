@@ -1,0 +1,16 @@
+{# Cards for a set of tier lists. Needs: tier_lists (with items__album prefetched). #}
+<div class="list-grid">
+  {% for tier_list in tier_lists %}
+    <a class="list-card" href="{% url 'tierlists.show' id=tier_list.id %}">
+      <div class="list-stack" aria-hidden="true">
+        {% for item in tier_list.items.all|slice:":4" %}
+          {% include 'albums/cover.html' with album=item.album %}
+        {% empty %}
+          <div class="album-cover"><span>S</span></div>
+        {% endfor %}
+      </div>
+      <h3>{{ tier_list.title }}</h3>
+      <p class="album-meta">Tier list · {{ tier_list.items.all|length }} album{{ tier_list.items.all|length|pluralize }}</p>
+    </a>
+  {% endfor %}
+</div>

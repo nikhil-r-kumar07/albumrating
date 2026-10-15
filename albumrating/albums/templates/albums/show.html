@@ -54,6 +54,23 @@
               <a class="btn-outline" href="{% url 'profiles.lists' %}">+ Create a list</a>
             {% endif %}
 
+            {% if template_data.my_tier_lists %}
+              <form class="add-to-list" method="POST" action="{% url 'tierlists.add' %}">
+                {% csrf_token %}
+                <input type="hidden" name="album" value="{{ album.id }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <label class="sr-only" for="add-to-tier-list">Choose a tier list</label>
+                <select id="add-to-tier-list" name="tier_list">
+                  {% for tier_list in template_data.my_tier_lists %}
+                    <option value="{{ tier_list.id }}">{{ tier_list.title }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn-outline" type="submit">+ Add to tier list</button>
+              </form>
+            {% else %}
+              <a class="btn-outline" href="{% url 'tierlists.index' %}">+ Make a tier list</a>
+            {% endif %}
+
             {% if template_data.is_favorite or not template_data.favorites_full %}
               <form method="POST" action="{% url 'profiles.favorite_toggle' %}">
                 {% csrf_token %}

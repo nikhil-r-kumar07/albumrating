@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% with form=template_data.form concert=template_data.concert %}
+    <section class="auth-card feedback-card concert-form-card">
+      <h1>{% if concert %}Edit concert{% else %}Log a concert{% endif %}</h1>
+      <p class="results-note">A show you went to, or one you watched on a stream, TV or a concert film.</p>
+
+      <form method="POST" action="{% if concert %}{% url 'concerts.edit' id=concert.id %}{% else %}{% url 'concerts.create' %}{% endif %}">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="form-field">
+          {{ form.artist_name.errors }}
+          <label for="{{ form.artist_name.id_for_label }}">{{ form.artist_name.label }}</label>
+          {{ form.artist_name }}
+          <datalist id="artist-names">
+            {% for name in template_data.artist_names %}<option value="{{ name }}">{% endfor %}
+          </datalist>
+          <div class="field-help">If the artist is already on IYM Reviews, your review shows up on their page too.</div>
+        </div>
+
+        <fieldset class="concert-how">
+          <legend>{{ form.how.label }}</legend>
+          {{ form.how.errors }}
+          <div class="concert-how-options">
+            {% for choice in form.how %}
+              <label class="concert-how-option">{{ choice.tag }} {{ choice.choice_label }}</label>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <div class="concert-fields">
+          <div class="form-field">
+            {{ form.date.errors }}
+            <label for="{{ form.date.id_for_label }}">Date</label>
+            {{ form.date }}
+          </div>
+          <div class="form-field">
+            {{ form.tour.errors }}
+            <label for="{{ form.tour.id_for_label }}">{{ form.tour.label }} <span class="star-picker-optional">(optional)</span></label>
+            {{ form.tour }}
+          </div>
+          <div class="form-field">
+            {{ form.venue.errors }}
+            <label for="{{ form.venue.id_for_label }}">Venue <span class="star-picker-optional">(optional)</span></label>
+            {{ form.venue }}
+          </div>
+          <div class="form-field">
+            {{ form.city.errors }}
+            <label for="{{ form.city.id_for_label }}">City <span class="star-picker-optional">(optional)</span></label>
+            {{ form.city }}
+          </div>
+        </div>
+
+        {% include 'albums/star_picker.html' with current=template_data.rating %}
+
+        <div class="form-field">
+          {{ form.review.errors }}
+          <label for="{{ form.review.id_for_label }}">{{ form.review.label }} <span class="star-picker-optional">(optional)</span></label>
+          {{ form.review }}
+          <div class="field-help">The setlist, the crowd, the openers, the moment that got you.</div>
+        </div>
+
+        <button type="submit">{% if concert %}Save changes{% else %}Log concert{% endif %}</button>
+      </form>
+
+      {% if concert %}
+        <form class="list-delete" method="POST" action="{% url 'concerts.delete' id=concert.id %}" onsubmit="return confirm('Delete this concert?');">
+          {% csrf_token %}
+          <button class="link-button" type="submit">Delete this concert</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endwith %}
+{% endblock %}

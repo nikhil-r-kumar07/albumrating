@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% with tier_list=template_data.tier_list editable=template_data.is_owner %}
+    <section class="list-header">
+      <p class="artist-label">Tier list by <a class="user-link" href="{% url 'profiles.public' username=tier_list.user.username %}">{{ tier_list.user.username }}</a></p>
+      <h1>{{ tier_list.title }}</h1>
+      {% if tier_list.description %}<p class="list-description">{{ tier_list.description|linebreaksbr }}</p>{% endif %}
+      <p class="artist-sub">{{ template_data.item_count }} album{{ template_data.item_count|pluralize }} · Updated {{ tier_list.updated|date:"M j, Y" }}</p>
+    </section>
+
+    {% if editable %}
+      <div class="tier-toolbar" id="tier-toolbar">
+        <p class="tier-hint" id="tier-hint" aria-live="polite">Drag albums into rows, or tap an album and then tap a row.</p>
+        <div class="tier-toolbar-actions">
+          <button class="link-button" type="button" id="tier-remove" hidden>Remove from tier list</button>
+          <span class="tier-status" id="tier-status" role="status"></span>
+        </div>
+      </div>
+    {% endif %}
+
+    <section class="tier-board{% if editable %} is-editable{% endif %}" id="tier-board"
+             {% if editable %}data-arrange-url="{% url 'tierlists.arrange' id=tier_list.id %}" data-remove-url="{% url 'tierlists.remove_item' id=tier_list.id item_id=0 %}"{% endif %}>
+      {% if editable %}{% csrf_token %}{% endif %}
+      {% for tier, items in template_data.rows %}
+        <div class="tier-row">
+          {% if editable %}
+            <button class="tier-label tier-color-{{ forloop.counter }}" type="button" data-move-to="{{ tier.id }}"><span>{{ tier.label }}</span><span class="sr-only"> tier. Move the selected album here</span></button>
+          {% else %}
+            <div class="tier-label tier-color-{{ forloop.counter }}"><span>{{ tier.label }}</span></div>
+          {% endif %}
+          <div class="tier-drop" data-tier="{{ tier.id }}">
+            {% for item in items %}{% include 'tierlists/tile.html' %}{% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+
+      {% if editable %}
+        <div class="tier-tray">
+          <h2 class="section-title">Unranked</h2>
+          <div class="tier-drop tier-drop-tray" data-tier="">
+            {% for item in template_data.tray %}{% include 'tierlists/tile.html' %}{% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </section>
+
+    {% if editable %}
+      <section class="tier-add">
+        {% if template_data.reviewed_left %}
+          <form method="POST" action="{% url 'tierlists.add_reviewed' id=tier_list.id %}">
+            {% csrf_token %}
+            <button class="btn-outline" type="submit">+ Add the {{ template_data.reviewed_left }} album{{ template_data.reviewed_left|pluralize }} I've reviewed</button>
+          </form>
+        {% endif %}
+        <p class="results-note">You can also add any album from its page with "Add to tier list". <a href="{% url 'albums.index' %}">Find albums</a></p>
+      </section>
+
+      <section class="list-settings">
+        <details>
+          <summary>Edit tier list</summary>
+          <form method="POST" action="{% url 'tierlists.update' id=tier_list.id %}">
+            {% csrf_token %}
+            <div class="form-field">
+              <label for="title">Title</label>
+              <input id="title" type="text" name="title" maxlength="100" required value="{{ tier_list.title }}">
+            </div>
+            <div class="form-field">
+              <label for="description">Description <span class="star-picker-optional">(optional)</span></label>
+              <textarea id="description" name="description" rows="3" maxlength="500">{{ tier_list.description }}</textarea>
+            </div>
+            <fieldset class="tier-names">
+              <legend>Row names</legend>
+              {% for tier, items in template_data.rows %}
+                <div class="tier-name-row">
+                  <span class="tier-swatch tier-color-{{ forloop.counter }}" aria-hidden="true"></span>
+                  <label class="sr-only" for="tier-{{ tier.id }}">Row {{ forloop.counter }} name</label>
+                  <input id="tier-{{ tier.id }}" type="text" name="tier-{{ tier.id }}" maxlength="20" required value="{{ tier.label }}">
+                  {% if template_data.rows|length > 1 %}
+                    <button class="link-button" type="submit" form="delete-tier-{{ tier.id }}">Remove row</button>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </fieldset>
+            <button class="btn" type="submit">Save</button>
+          </form>
+
+          {% for tier, items in template_data.rows %}
+            <form id="delete-tier-{{ tier.id }}" method="POST" action="{% url 'tierlists.delete_tier' id=tier_list.id tier_id=tier.id %}"
+                  onsubmit="return confirm('Remove the &quot;{{ tier.label|escapejs }}&quot; row? Its albums go back to Unranked.');" hidden>
+              {% csrf_token %}
+            </form>
+          {% endfor %}
+
+          {% if template_data.can_add_tier %}
+            <form class="tier-add-row" method="POST" action="{% url 'tierlists.add_tier' id=tier_list.id %}">
+              {% csrf_token %}
+              <label class="sr-only" for="new-tier">New row name</label>
+              <input id="new-tier" type="text" name="label" maxlength="20" placeholder="New row, e.g. F">
+              <button class="btn-outline" type="submit">+ Add row</button>
+            </form>
+          {% endif %}
+
+          <form class="list-delete" method="POST" action="{% url 'tierlists.delete' id=tier_list.id %}" onsubmit="return confirm('Delete this tier list? The albums themselves stay on the site.');">
+            {% csrf_token %}
+            <button class="link-button" type="submit">Delete this tier list</button>
+          </form>
+        </details>
+        <p class="results-note">Anyone with the link to this page can see the tier list. Only you can change it.</p>
+      </section>
+
+      <script>
+        (function () {
+          var board = document.getElementById('tier-board');
+          var hint = document.getElementById('tier-hint');
+          var status = document.getElementById('tier-status');
+          var removeButton = document.getElementById('tier-remove');
+          var token = board.querySelector('[name=csrfmiddlewaretoken]').value;
+          var defaultHint = hint.textContent;
+          var selected = null;
+          var dragged = null;
+
+          function drops() { return board.querySelectorAll('.tier-drop'); }
+
+          function snapshot() {
+            return JSON.stringify({ rows: Array.prototype.map.call(drops(), function (drop) {
+              return {
+                tier: drop.dataset.tier ? Number(drop.dataset.tier) : null,
+                items: Array.prototype.map.call(drop.querySelectorAll('.tier-tile'), function (tile) { return Number(tile.dataset.item); })
+              };
+            }) });
+          }
+
+          var saved = snapshot();
+
+          function post(url, body, headers) {
+            headers['X-CSRFToken'] = token;
+            headers['X-Requested-With'] = 'fetch';
+            return fetch(url, { method: 'POST', headers: headers, body: body, credentials: 'same-origin' })
+              .then(function (response) { if (!response.ok) throw new Error(response.status); });
+          }
+
+          function save() {
+            var current = snapshot();
+            if (current === saved) return;
+            status.textContent = 'Saving…';
+            post(board.dataset.arrangeUrl, current, { 'Content-Type': 'application/json' })
+              .then(function () { saved = current; status.textContent = 'Saved'; })
+              .catch(function () { status.textContent = "Couldn't save. Check your connection and try again."; });
+          }
+
+          function select(tile) {
+            if (selected) {
+              selected.classList.remove('is-selected');
+              selected.setAttribute('aria-pressed', 'false');
+            }
+            selected = tile;
+            board.classList.toggle('has-selection', !!tile);
+            removeButton.hidden = !tile;
+            if (tile) {
+              tile.classList.add('is-selected');
+              tile.setAttribute('aria-pressed', 'true');
+              hint.textContent = tile.dataset.name + ' selected. Tap a row to move it there, or another album to put it in front of that one.';
+            } else {
+              hint.textContent = defaultHint;
+            }
+          }
+
+          // ---- tap / click / keyboard ----
+          board.addEventListener('click', function (event) {
+            var tile = event.target.closest('.tier-tile');
+            var target = event.target.closest('[data-move-to]') || event.target.closest('.tier-drop');
+            if (tile) {
+              if (!selected || selected === tile) {
+                select(selected === tile ? null : tile);
+              } else {
+                tile.parentNode.insertBefore(selected, tile);
+                selected.focus();
+                select(null);
+                save();
+              }
+            } else if (target && selected) {
+              var drop = target.classList.contains('tier-drop') ? target : target.parentNode.querySelector('.tier-drop');
+              drop.appendChild(selected);
+              selected.focus();
+              select(null);
+              save();
+            }
+          });
+
+          board.addEventListener('keydown', function (event) {
+            var tile = event.target.closest('.tier-tile');
+            if (tile && (event.key === 'Enter' || event.key === ' ')) {
+              event.preventDefault();
+              tile.click();
+            }
+          });
+
+          document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && selected) select(null);
+          });
+
+          removeButton.addEventListener('click', function () {
+            if (!selected) return;
+            var tile = selected;
+            status.textContent = 'Removing…';
+            post(board.dataset.removeUrl.replace('/0/', '/' + tile.dataset.item + '/'), null, {})
+              .then(function () {
+                tile.remove();
+                select(null);
+                saved = snapshot();
+                status.textContent = 'Removed';
+              })
+              .catch(function () { status.textContent = "Couldn't remove it. Try again."; });
+          });
+
+          // ---- drag and drop (mouse) ----
+          function tileAfter(drop, x, y) {
+            var tiles = drop.querySelectorAll('.tier-tile:not(.is-dragging)');
+            for (var i = 0; i < tiles.length; i++) {
+              var box = tiles[i].getBoundingClientRect();
+              if (y < box.top || (y <= box.bottom && x < box.left + box.width / 2)) return tiles[i];
+            }
+            return null;
+          }
+
+          board.addEventListener('dragstart', function (event) {
+            var tile = event.target.closest('.tier-tile');
+            if (!tile) return;
+            select(null);
+            dragged = tile;
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', tile.dataset.item);
+            setTimeout(function () { tile.classList.add('is-dragging'); }, 0);
+          });
+
+          board.addEventListener('dragover', function (event) {
+            if (!dragged) return;
+            var row = event.target.closest('.tier-row, .tier-tray');
+            if (!row) return;
+            event.preventDefault();
+            var drop = row.querySelector('.tier-drop');
+            var after = tileAfter(drop, event.clientX, event.clientY);
+            if (after) {
+              if (dragged.nextSibling !== after) drop.insertBefore(dragged, after);
+            } else if (drop.lastElementChild !== dragged) {
+              drop.appendChild(dragged);
+            }
+          });
+
+          board.addEventListener('drop', function (event) {
+            if (dragged) event.preventDefault();
+          });
+
+          board.addEventListener('dragend', function () {
+            if (!dragged) return;
+            dragged.classList.remove('is-dragging');
+            dragged = null;
+            save();
+          });
+        })();
+      </script>
+    {% endif %}
+  {% endwith %}
+{% endblock %}

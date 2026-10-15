@@ -1546,6 +1546,294 @@
       font-size: 0.85rem;
       color: var(--muted);
     }
+    /* ---------- tier lists ---------- */
+
+    .tier-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px 16px;
+      margin-bottom: 12px;
+      padding: 10px 0;
+      background: var(--bg);
+    }
+
+    .tier-hint { margin: 0; font-size: 0.85rem; color: var(--muted); }
+
+    .tier-toolbar-actions { display: flex; gap: 16px; align-items: center; font-size: 0.85rem; }
+
+    .tier-status { color: var(--muted); }
+
+    .tier-board {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .tier-row {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      min-height: 88px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tier-board:not(.is-editable) .tier-row:last-child { border-bottom: 0; }
+
+    .tier-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border: 0;
+      font: inherit;
+      font-size: 1.4rem;
+      font-weight: 700;
+      line-height: 1.15;
+      text-align: center;
+      overflow-wrap: anywhere;
+      color: #14181c;
+    }
+
+    .tier-label span:first-child { max-width: 100%; }
+
+    button.tier-label { cursor: default; }
+
+    .has-selection button.tier-label { cursor: pointer; }
+
+    .has-selection button.tier-label:hover,
+    button.tier-label:focus-visible { outline: 3px solid var(--text); outline-offset: -3px; }
+
+    .tier-color-1 { background: #ff7f7f; }
+    .tier-color-2 { background: #ffbf7f; }
+    .tier-color-3 { background: #ffdf7f; }
+    .tier-color-4 { background: #bfff7f; }
+    .tier-color-5 { background: #7fffff; }
+    .tier-color-6 { background: #7fbfff; }
+    .tier-color-7 { background: #b39dff; }
+    .tier-color-8 { background: #ff9de2; }
+    .tier-color-9 { background: #c8c8c8; }
+    .tier-color-10 { background: #a0a0a0; }
+
+    .tier-drop {
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 6px;
+      min-height: 88px;
+      padding: 6px;
+      background: var(--surface);
+    }
+
+    .has-selection .tier-drop { cursor: pointer; }
+
+    .has-selection .tier-drop:hover { background: #26303a; }
+
+    .tier-drop:not(:has(.tier-tile))::before {
+      content: "";
+      align-self: center;
+      padding-left: 8px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .is-editable .tier-drop:not(:has(.tier-tile))::before { content: "Drop albums here"; }
+
+    .tier-tray { padding: 16px 12px 12px; background: var(--bg); }
+
+    .tier-tray .section-title { margin-bottom: 10px; }
+
+    .tier-drop-tray {
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      background: transparent;
+    }
+
+    .is-editable .tier-drop-tray:not(:has(.tier-tile))::before { content: "Everything's ranked. Add more albums below."; }
+
+    .tier-tile {
+      display: block;
+      flex: none;
+      width: 76px;
+      border-radius: 4px;
+      outline-offset: 2px;
+    }
+
+    .tier-tile .album-cover { font-size: 1.4rem; border-radius: 4px; }
+
+    .tier-tile img { -webkit-user-drag: none; pointer-events: none; }
+
+    .is-editable .tier-tile { cursor: grab; touch-action: manipulation; }
+
+    a.tier-tile:hover .album-cover { border-color: var(--accent); }
+
+    .tier-tile:focus-visible { outline: 2px solid var(--accent); }
+
+    .tier-tile.is-selected { outline: 3px solid var(--accent); }
+
+    .tier-tile.is-selected .album-cover { opacity: 0.75; }
+
+    .tier-tile.is-dragging { opacity: 0.35; }
+
+    .tier-add { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 20px; }
+
+    .tier-add .results-note { margin: 0; }
+
+    .tier-names {
+      margin: 0 0 18px;
+      padding: 0;
+      border: 0;
+    }
+
+    .tier-names legend { margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; }
+
+    .tier-name-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+
+    .tier-swatch { flex: none; width: 18px; height: 18px; border-radius: 4px; }
+
+    .tier-name-row input,
+    .tier-add-row input {
+      width: 160px;
+      padding: 7px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .tier-name-row input:focus,
+    .tier-add-row input:focus { outline: none; border-color: var(--accent); }
+
+    .tier-add-row { display: flex; gap: 8px; margin-top: 20px; }
+
+    @media (max-width: 520px) {
+      .tier-row { grid-template-columns: 56px minmax(0, 1fr); min-height: 68px; }
+      .tier-label { font-size: 1.1rem; padding: 4px; }
+      .tier-drop { min-height: 68px; gap: 4px; padding: 4px; }
+      .tier-tile { width: 58px; }
+    }
+
+    /* ---------- concerts ---------- */
+
+    .concert-list { margin: 0; padding: 0; list-style: none; }
+
+    .concert-row {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .concert-date {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      line-height: 1.1;
+    }
+
+    a.concert-date:hover { border-color: var(--accent); }
+
+    .concert-month {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .concert-day { font-size: 1.4rem; font-weight: 700; }
+
+    .concert-year { font-size: 0.7rem; color: var(--muted); }
+
+    .concert-date-lg { flex: none; width: 96px; padding: 12px 0; }
+
+    .concert-date-lg .concert-day { font-size: 2.2rem; }
+
+    .concert-date-lg .concert-month,
+    .concert-date-lg .concert-year { font-size: 0.8rem; }
+
+    .concert-tour { margin: 2px 0 0; font-size: 0.85rem; font-style: italic; color: var(--muted); }
+
+    .concert-snippet { margin: 6px 0 0; font-size: 0.9rem; overflow-wrap: anywhere; }
+
+    .concert-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 0 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.7rem;
+      vertical-align: 1px;
+    }
+
+    .concert-rating .review-stars { margin: 0; }
+
+    .concert-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 48px 0 28px;
+    }
+
+    .concert-header h1 {
+      margin: 0 0 4px;
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      line-height: 1.15;
+    }
+
+    .concert-header h1 a:hover { color: var(--accent); }
+
+    .concert-review { max-width: 680px; }
+
+    .concert-review .review-stars { margin: 0 0 12px; font-size: 1.3rem; }
+
+    .concert-form-card { max-width: 640px; }
+
+    .concert-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 16px;
+    }
+
+    .concert-how { margin: 0 0 18px; padding: 0; border: 0; }
+
+    .concert-how legend { margin-bottom: 6px; font-size: 0.9rem; font-weight: 600; }
+
+    .concert-how-options { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .concert-how-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .concert-how-option:has(input:checked) { border-color: var(--accent); color: var(--accent); }
+
+    .concert-how-option input { accent-color: var(--accent); margin: 0; }
+
+    @media (max-width: 520px) {
+      .concert-row { grid-template-columns: 52px minmax(0, 1fr); gap: 12px; }
+      .concert-rating { grid-column: 2; }
+      .concert-fields { grid-template-columns: 1fr; }
+      .concert-header { gap: 16px; }
+      .concert-date-lg { width: 72px; }
+      .concert-date-lg .concert-day { font-size: 1.7rem; }
+    }
   </style>
 </head>
 <body>
@@ -1575,6 +1863,8 @@
               <a href="{% url 'profiles.diary' %}">Diary</a>
               <a href="{% url 'profiles.stats' username=user.username %}">Stats</a>
               <a href="{% url 'profiles.lists' %}">Lists</a>
+              <a href="{% url 'tierlists.index' %}">Tier lists</a>
+              <a href="{% url 'concerts.index' %}">Concerts</a>
               <a href="{% url 'profiles.queue' %}">Queue</a>
               <a href="{% url 'profiles.people' %}">Find People</a>
               <div class="dropdown-divider" role="separator"></div>

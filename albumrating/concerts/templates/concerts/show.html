@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load ratings %}
+
+{% block content %}
+  {% with concert=template_data.concert %}
+    <section class="concert-header">
+      <div class="concert-date concert-date-lg" aria-hidden="true">
+        <span class="concert-month">{{ concert.date|date:"M" }}</span>
+        <span class="concert-day">{{ concert.date|date:"j" }}</span>
+        <span class="concert-year">{{ concert.date|date:"Y" }}</span>
+      </div>
+      <div>
+        <p class="artist-label">
+          {% if concert.how == 'watched' %}Watched by{% else %}Seen live by{% endif %}
+          <a class="user-link" href="{% url 'profiles.public' username=concert.user.username %}">{{ concert.user.username }}</a>
+        </p>
+        <h1>
+          {% if concert.artist %}<a href="{% url 'albums.artist' id=concert.artist.id %}">{{ concert.artist_name }}</a>{% else %}{{ concert.artist_name }}{% endif %}
+        </h1>
+        {% if concert.tour %}<p class="concert-tour">{{ concert.tour }}</p>{% endif %}
+        <p class="artist-sub">
+          <time datetime="{{ concert.date|date:'Y-m-d' }}">{{ concert.date|date:"l, F j, Y" }}</time>{% if concert.place %} · {{ concert.place }}{% endif %}
+        </p>
+      </div>
+    </section>
+
+    <section class="concert-review">
+      {% if concert.rating is not None %}
+        {% include 'albums/stars.html' with rating=concert.rating label=concert.user.username|add:' rated it ' %}
+      {% endif %}
+      {% if concert.review %}
+        <p class="review-comment">{{ concert.review|linebreaksbr }}</p>
+      {% elif concert.rating is None %}
+        <div class="empty">No rating or review yet.</div>
+      {% endif %}
+      {% if template_data.is_owner %}
+        <p class="review-prompt"><a href="{% url 'concerts.edit' id=concert.id %}">Edit</a></p>
+      {% endif %}
+    </section>
+
+    {% if template_data.also_there %}
+      <section class="home-section">
+        <h2 class="section-title">Also logged this show</h2>
+        <ul class="concert-list">
+          {% for concert in template_data.also_there %}
+            {% include 'concerts/row.html' with show_user=True %}
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
+    <p class="results-note"><a href="{% url 'concerts.user' username=concert.user.username %}">← All of {{ concert.user.username }}'s concerts</a></p>
+  {% endwith %}
+{% endblock %}

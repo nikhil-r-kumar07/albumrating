@@ -27,6 +27,8 @@ urlpatterns = [
     path('charts/', include('charts.urls')),
     path('feedback/', include('feedback.urls')),
     path('profile/', include('profiles.urls')),
+    path('tierlists/', include('tierlists.urls')),
+    path('concerts/', include('concerts.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

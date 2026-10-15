@@ -1,0 +1,21 @@
+{# One concert in a list. Needs: concert. Optional: show_user (who logged it). #}
+<li class="concert-row">
+  <a class="concert-date" href="{% url 'concerts.show' id=concert.id %}" aria-hidden="true" tabindex="-1">
+    <span class="concert-month">{{ concert.date|date:"M" }}</span>
+    <span class="concert-day">{{ concert.date|date:"j" }}</span>
+    <span class="concert-year">{{ concert.date|date:"Y" }}</span>
+  </a>
+  <div class="concert-info">
+    <a class="chart-title" href="{% url 'concerts.show' id=concert.id %}">{{ concert.artist_name }}</a>
+    <p class="chart-artist">
+      {% if show_user %}<a class="user-link" href="{% url 'profiles.public' username=concert.user.username %}">{{ concert.user.username }}</a> · {% endif %}
+      {% if concert.place %}{{ concert.place }}{% else %}{{ concert.date|date:"M j, Y" }}{% endif %}
+      {% if concert.how == 'watched' %}<span class="concert-badge">Watched</span>{% endif %}
+    </p>
+    {% if concert.tour %}<p class="concert-tour">{{ concert.tour }}</p>{% endif %}
+    {% if concert.review %}<p class="concert-snippet">{{ concert.review|truncatechars:160 }}</p>{% endif %}
+  </div>
+  {% if concert.rating is not None %}
+    <div class="concert-rating">{% include 'albums/stars.html' with rating=concert.rating %}</div>
+  {% endif %}
+</li>

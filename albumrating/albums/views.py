@@ -9,6 +9,7 @@ from django.utils import timezone
 from .models import Album, Review, Artist, ArtistReview, Comment, CommentReport, ReviewLike, Track
 from . import musicbrainz, moderation
 from profiles.models import AlbumList, QueueItem, DiaryEntry, Favorite
+from tierlists.models import TierList
 from profiles.notify import notify, unnotify
 from django.db.models import Avg, Count, Prefetch
 
@@ -100,6 +101,7 @@ def show(request, id):
     if request.user.is_authenticated:
         template_data['my_review'] = reviews.filter(user=request.user).first()
         template_data['my_lists'] = AlbumList.objects.filter(user=request.user).order_by('title')
+        template_data['my_tier_lists'] = TierList.objects.filter(user=request.user).order_by('title')
         template_data['queue_item'] = QueueItem.objects.filter(user=request.user, album=album).first()
         listens = DiaryEntry.objects.filter(user=request.user, album=album)
         template_data['listen_count'] = listens.count()
@@ -162,6 +164,7 @@ def artist(request, id):
     stats = all_reviews.aggregate(average = Avg('rating'), count = Count('rating'))
     template_data['average'] = stats['average']
     template_data['rating_count'] = stats['count']
+    template_data['concerts'] = artist.concerts.select_related('user')[:20]
     if request.user.is_authenticated:
         template_data['my_review'] = reviews.filter(user=request.user).first()
     return render(request, 'albums/artist.html', {'template_data': template_data})

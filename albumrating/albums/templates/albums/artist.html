@@ -43,6 +43,22 @@
       {% endif %}
     </section>
 
+    <section class="home-section artist-concerts">
+      <h2 class="section-title" id="concerts">Seen live</h2>
+      {% if template_data.concerts %}
+        <ul class="concert-list">
+          {% for concert in template_data.concerts %}
+            {% include 'concerts/row.html' with show_user=True %}
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty">Nobody has logged a {{ artist.name }} show yet.{% if user.is_authenticated %} <a href="{% url 'concerts.create' %}?artist={{ artist.id }}">Seen them live? Log it</a>.{% endif %}</div>
+      {% endif %}
+      {% if template_data.concerts and user.is_authenticated %}
+        <p class="review-prompt"><a href="{% url 'concerts.create' %}?artist={{ artist.id }}">+ Log a {{ artist.name }} concert</a></p>
+      {% endif %}
+    </section>
+
     <section class="reviews">
       <h2 class="section-title" id="reviews">Reviews of {{ artist.name }}</h2>
       {% if template_data.reviews|length > 1 %}
